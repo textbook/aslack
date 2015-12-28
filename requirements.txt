@@ -1,0 +1,7 @@
+aiohttp==0.19.0
+asynctest==0.5.0
+chardet==2.3.0
+py==1.4.31
+pytest==2.8.5
+pytest-asyncio==0.3.0
+wheel==0.24.0
