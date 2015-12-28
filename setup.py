@@ -18,7 +18,7 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = read('README.md')
+long_description = read('README.rst')
 
 
 class PyTest(TestCommand):
@@ -48,7 +48,7 @@ setup(
     ],
     cmdclass={'test': PyTest},
     description=aslack.__doc__,
-    install_requires=['aiohttp>=0.19.0'],
+    install_requires=['aiohttp>=0.15.0'],
     license='License :: OSI Approved :: ISC License (ISCL)',
     long_description=long_description,
     name='aslack',
