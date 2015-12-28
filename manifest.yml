@@ -1,0 +1,5 @@
+---
+applications:
+- name: halliwell
+  buildpack: https://github.com/cloudfoundry/python-buildpack#v1.5.3
+  no-route: true
