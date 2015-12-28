@@ -1,4 +1,4 @@
-"""Asynchronous Slack integration."""
+"""Asynchronous Slack API integration."""
 
 import logging
 
