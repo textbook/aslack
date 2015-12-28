@@ -3,6 +3,9 @@ aSlack
 
 */əˈslæk/*
 
+.. image:: https://img.shields.io/pypi/v/aslack.svg
+    :target: https://pypi.python.org/pypi/aslack
+
 .. image:: https://img.shields.io/badge/license-ISC-blue.svg
     :target: https://github.com/textbook/aslack/blob/master/LICENSE
 
