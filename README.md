@@ -2,6 +2,8 @@
 
 /əˈslæk/
 
+[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg)][license]
+
 **Asynchronous Slack API integration.**
 
 aSlack is a lightweight, asynchronous wrapper for Slack's Web and real-time
@@ -15,3 +17,5 @@ in Python. It defines two principal components:
 
 aSlack uses `asyncio` with the `async` and `await` syntax, so is only compatible
 with Python versions 3.5 and above.
+
+  [license]: LICENSE
