@@ -183,7 +183,7 @@ class SlackApi:
         logger.info('Status: {}'.format(response.status))
         if response.status == 200:
             json = await response.json()
-            logger.debug(json)
+            logger.debug('...with JSON {!r}'.format(json))
             if json.get('ok'):
                 return json
             raise SlackApiError(json['error'])
