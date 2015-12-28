@@ -9,62 +9,32 @@ from aslack.slack_api import SlackApi, SlackApiError
 DUMMY_TOKEN = 'token'
 
 
+@pytest.mark.parametrize('status,result,error', [
+    (200, {'ok': True}, None),
+    (200, {'ok': False, 'error': 'foo'}, SlackApiError),
+    (500, {}, HTTPException),
+])
 @mock.patch('aslack.slack_api.aiohttp')
 @pytest.mark.asyncio
-async def test_execute_method_success(aiohttp):
-    result = {'ok': True}
+async def test_execute_method(aiohttp, status, result, error):
     json_future = asyncio.Future()
     json_future.set_result(result)
     resp_future = asyncio.Future()
-    resp_future.set_result(
-        mock.MagicMock(status=200, **{'json.return_value': json_future})
-    )
+    resp_future.set_result(mock.MagicMock(
+        status=status,
+        message='failed',
+        **{'json.return_value': json_future}
+    ))
     aiohttp.get.return_value = resp_future
     api = SlackApi(DUMMY_TOKEN)
     method = 'auth.test'
-    response = await api.execute_method(method)
-    assert response == result
+    if error is None:
+        assert await api.execute_method(method) == result
+    else:
+        with pytest.raises(error):
+            await api.execute_method(method)
     aiohttp.get.assert_called_once_with(
-        SlackApi._create_url(method),
-        params={'token': DUMMY_TOKEN},
-    )
-
-
-@mock.patch('aslack.slack_api.aiohttp')
-@pytest.mark.asyncio
-async def test_execute_method_api_failure(aiohttp):
-    result = {'ok': False, 'error': 'foo'}
-    json_future = asyncio.Future()
-    json_future.set_result(result)
-    resp_future = asyncio.Future()
-    resp_future.set_result(
-        mock.MagicMock(status=200, **{'json.return_value': json_future})
-    )
-    aiohttp.get.return_value = resp_future
-    api = SlackApi(DUMMY_TOKEN)
-    method = 'auth.test'
-    with pytest.raises(SlackApiError):
-        await api.execute_method(method)
-    aiohttp.get.assert_called_once_with(
-        SlackApi._create_url(method),
-        params={'token': DUMMY_TOKEN},
-    )
-
-
-@mock.patch('aslack.slack_api.aiohttp')
-@pytest.mark.asyncio
-async def test_execute_method_http_failure(aiohttp):
-    future = asyncio.Future()
-    future.set_result(
-        mock.MagicMock(status=500, message='failed')
-    )
-    aiohttp.get.return_value = future
-    api = SlackApi(DUMMY_TOKEN)
-    method = 'auth.test'
-    with pytest.raises(HTTPException):
-        await api.execute_method(method)
-    aiohttp.get.assert_called_once_with(
-        'https://slack.com/api/auth.test',
+        'https://slack.com/api/{}'.format(method),
         params={'token': DUMMY_TOKEN},
     )
 
