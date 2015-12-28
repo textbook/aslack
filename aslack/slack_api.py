@@ -174,15 +174,16 @@ class SlackApi:
            contains an error message.
 
         """
-        logger.info('Executing method {!r}'.format(method))
         url = self._create_url(method)
         params = params.copy()
         params['token'] = self.token
+        logger.info('Executing method {!r}'.format(method))
         logger.debug('...with params {!r}'.format(params))
         response = await aiohttp.get(url, params=params)
-        logger.debug('Status: {}'.format(response.status))
+        logger.info('Status: {}'.format(response.status))
         if response.status == 200:
             json = await response.json()
+            logger.debug(json)
             if json.get('ok'):
                 return json
             raise SlackApiError(json['error'])
@@ -227,7 +228,10 @@ class SlackApi:
             methods = methods.get(key)
             if methods is None:
                 break
-        return isinstance(methods, str)
+        if isinstance(methods, str):
+            logger.debug('{!r}: {!r}'.format(method, methods))
+            return True
+        return False
 
 
 class SlackBotApi(SlackApi):
