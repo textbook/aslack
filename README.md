@@ -2,9 +2,9 @@
 
 /əˈslæk/
 
-[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg)][license]
-
 **Asynchronous Slack API integration.**
+
+[![ISC License](https://img.shields.io/badge/license-ISC-blue.svg)][license]
 
 aSlack is a lightweight, asynchronous wrapper for Slack's Web and real-time
 messaging APIs, designed to allow the easy development of Slack tools and bots
