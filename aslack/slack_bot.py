@@ -36,6 +36,9 @@ class SlackBot:
         Arguments:
           token (str): The bot's API token.
 
+        Returns:
+          SlackBot: The new instance.
+
         """
         api = SlackBotApi(token)
         data = await api.execute_method(cls.API_AUTH_ENDPOINT)
