@@ -6,6 +6,12 @@ aSlack
 .. image:: https://img.shields.io/pypi/v/aslack.svg
     :target: https://pypi.python.org/pypi/aslack
 
+.. image:: https://travis-ci.org/textbook/aslack.svg
+    :target: https://travis-ci.org/textbook/aslack
+
+.. image:: https://coveralls.io/repos/textbook/aslack/badge.svg?branch=master&service=github
+    :target: https://coveralls.io/github/textbook/aslack?branch=master
+
 .. image:: https://img.shields.io/badge/license-ISC-blue.svg
     :target: https://github.com/textbook/aslack/blob/master/LICENSE
 
