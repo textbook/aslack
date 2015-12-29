@@ -68,6 +68,10 @@ class SlackBot:
         Returns:
           dict: The loaded data.
 
+        Raises:
+          AttributeError: If there is no data attribute.
+          json.JSONDecodeError: If the data isn't valid JSON.
+
         """
         return json.loads(msg.data)
 

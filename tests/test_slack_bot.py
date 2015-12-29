@@ -39,15 +39,27 @@ async def test_get_socket_url():
     api.execute_method.assert_called_once_with('rtm.start')
 
 
-def test_unpack_message():
+def test_unpack_message_success():
     data = {'bar': 'foo'}
     mock_message = mock.Mock(data=json.dumps(data))
     assert SlackBot._unpack_message(mock_message) == data
 
 
+def test_unpack_message_no_data():
+    with pytest.raises(AttributeError):
+        SlackBot._unpack_message(object())
+
+
+def test_unpack_message_broken_json():
+    mock_message = mock.Mock(data='broken.json')
+    with pytest.raises(json.JSONDecodeError):
+        SlackBot._unpack_message(mock_message)
+
+
 @pytest.mark.parametrize('data,raises', [
-    ('{}', SlackApiError),
-    ('{"type": "hello"}', None)
+    ('{"type": "hello"}', None),
+    ('{"foo": "bar"}', SlackApiError),
+    ('broken.json', json.JSONDecodeError),
 ])
 @mock.patch('aslack.slack_bot.logging')
 def test_validate_first_message(logging, data, raises):
@@ -55,5 +67,5 @@ def test_validate_first_message(logging, data, raises):
     if raises is None:
         assert SlackBot._validate_first_message(mock_message) is None
     else:
-        with pytest.raises(SlackApiError):
+        with pytest.raises(raises):
             SlackBot._validate_first_message(mock_message)
