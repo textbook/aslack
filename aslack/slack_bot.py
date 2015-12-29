@@ -68,7 +68,7 @@ class SlackBot:
         if filters is None:
             filters = self.MESSAGE_FILTERS
         url = await self._get_socket_url()
-        logging.debug('Connecting to {!r}'.format(url))
+        logger.debug('Connecting to {!r}'.format(url))
         async with aiohttp.ws_connect(url) as socket:
             first_msg = await socket.receive()
             self._validate_first_message(first_msg)
