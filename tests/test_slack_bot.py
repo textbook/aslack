@@ -14,6 +14,7 @@ def test_init(randint):
     for attr, val in args.items():
         assert getattr(bot, attr) == val
     assert bot.address_as == '<@foo>: '
+    assert bot.full_name == '<@foo>'
     assert next(bot._msg_ids) == randint.return_value
     randint.assert_called_once_with(1, 1000)
 
@@ -87,7 +88,7 @@ def test_format_message(randint):
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
-def test_handle_message(randint):
+def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
     mock_message = mock.Mock(data='{}')
     mock_filter_ = mock.Mock(return_value=True)
@@ -103,6 +104,21 @@ def test_handle_message(randint):
     mock_dispatch.assert_called_once_with({})
 
 
+@mock.patch('aslack.slack_bot.randint', return_value=10)
+def test_handle_help_message(randint):
+    bot = SlackBot('foo', None, None)
+    mock_msg = mock.Mock(
+        data=json.dumps(dict(channel='bar', text='<@foo>: ?', type='message')),
+    )
+    expected = dict(
+        channel='bar',
+        id=randint.return_value,
+        text=SlackBot._instruction_list({}),
+        type='message',
+    )
+    response = bot._handle_message(mock_msg, {})
+    assert json.loads(response) == expected
+
 def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
@@ -114,3 +130,34 @@ def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
     bot._handle_message(mock_msg, {lambda msg: False: None})
+
+
+@pytest.mark.parametrize('input_,output', [
+    ({'type': 'message', 'text': '<@foo>: something'}, True),
+    ({'type': 'message', 'text': 'something <@foo>: else'}, False),
+    ({'type': 'message', 'text': 'something else'}, False),
+])
+def test_to_me(input_, output):
+    bot = SlackBot('foo', None, None)
+    assert bot.message_is_to_me(input_) == output
+
+
+@pytest.mark.parametrize('input_,output', [
+    ({'type': 'message', 'text': '<@foo>: something'}, True),
+    ({'type': 'message', 'text': 'something <@foo>: else'}, True),
+    ({'type': 'message', 'text': 'something else'}, False),
+])
+def test_mentions_me(input_, output):
+    bot = SlackBot('foo', None, None)
+    assert bot.message_mentions_me(input_) == output
+
+
+def test_instruction_list():
+    def filter_():
+        """foo"""
+    def dispatch():
+        """bar"""
+    instructions = SlackBot._instruction_list({filter_: dispatch})
+    assert instructions.endswith('foo bar')
+    assert instructions.startswith(SlackBot.INSTRUCTIONS)
+    assert '"@username: ?"' in instructions
