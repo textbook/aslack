@@ -12,6 +12,10 @@ aSlack
 .. image:: https://coveralls.io/repos/textbook/aslack/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/textbook/aslack?branch=master
 
+.. image:: https://www.quantifiedcode.com/api/v1/project/482551d8368740c68fb1d3e80c4f6664/badge.svg
+    :target: https://www.quantifiedcode.com/app/project/482551d8368740c68fb1d3e80c4f6664
+    :alt: Code issues
+
 .. image:: https://img.shields.io/badge/license-ISC-blue.svg
     :target: https://github.com/textbook/aslack/blob/master/LICENSE
 
