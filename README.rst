@@ -38,5 +38,23 @@ Dependencies
 Asynchronous HTTP and WebSocket functionality is provided by aiohttp_ (version
 0.15 and above required for out-of-the-box WebSocket client support).
 
+Installation
+------------
+
+aSlack is available through the Python Package Index, PyPI_, you can install it
+with::
+
+    pip install aslack
+
+Alternatively, download or clone this repository and use e.g.::
+
+    python setup.py develop
+
+to install locally for development. In this case, you should also install the
+development dependencies using::
+
+    pip install -r requirements.txt
+
 .. _aiohttp: http://aiohttp.rtfd.org/
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
+.. _PyPI: https://pypi.python.org/pypi
