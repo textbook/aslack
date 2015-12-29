@@ -159,5 +159,5 @@ def test_instruction_list():
         """bar"""
     instructions = SlackBot._instruction_list({filter_: dispatch})
     assert instructions.endswith('foo bar')
-    assert instructions.startswith(SlackBot.INSTRUCTIONS)
+    assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
     assert '"@username: ?"' in instructions

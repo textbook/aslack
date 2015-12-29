@@ -181,9 +181,9 @@ class SlackBot:
           str: The bot's instructions.
 
         """
-        return '\n'.join([
-            cls.INSTRUCTIONS,
-            'Supported methods:'
+        return '\n\n'.join([
+            cls.INSTRUCTIONS.strip(),
+            '*Supported methods:*',
             'If you send "@username: ?" to the bot it replies with these '
             'instructions.',
         ] + [
