@@ -23,7 +23,12 @@ class SlackApiError(FriendlyError):
 
 
 class SlackApi:
-    """Class to handle interaction with Slack's API."""
+    """Class to handle interaction with Slack's API.
+
+    Arguments:
+      :py:class:`str`: The user's API token.
+
+    """
 
     API_BASE_URL = 'https://slack.com/api'
     """The base URL for Slack API calls."""

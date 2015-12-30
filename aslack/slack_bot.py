@@ -15,7 +15,21 @@ logger = logging.getLogger(__name__)
 
 
 class SlackBot:
-    """Base class Slack bot."""
+    """Base class Slack bot.
+
+        Arguments:
+          id_ (:py:class:`str`): The bot's Slack ID.
+          user (:py:class:`str`): The bot's friendly name.
+          api (SlackApi): The Slack API wrapper.
+
+        Attributes:
+          address_as (:py:class:`str`): The text that appears at the
+            start of messages address to this bot (e.g.
+            ``'<@user>: '``).
+          full_name (:py:class:`str`): The name of the bot as it
+            appears in messages about the bot (e.g. ``'<@user>'``).
+
+        """
 
     API_AUTH_ENDPOINT = 'auth.test'
     """Test endpoint for API authorisation."""
@@ -36,14 +50,6 @@ class SlackBot:
     """Start endpoint for real-time messaging."""
 
     def __init__(self, id_, user, api):
-        """Initialise the new bot.
-
-        Arguments:
-          id_ (:py:class:`str`): The bot's Slack ID.
-          user (:py:class:`str`): The bot's friendly name.
-          api (SlackApi): The Slack API wrapper.
-
-        """
         self.id_ = id_
         self.user = user
         self.api = api
