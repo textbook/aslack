@@ -26,7 +26,7 @@ class SlackApi:
     """Class to handle interaction with Slack's API.
 
     Arguments:
-      :py:class:`str`: The user's API token.
+      token (:py:class:`str`): The user's API token.
 
     """
 
