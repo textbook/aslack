@@ -11,10 +11,6 @@ aSlack
     :target: https://travis-ci.org/textbook/aslack
     :alt: Travis Build Status
 
-.. image:: https://readthedocs.org/projects/aslack/badge/?version=latest
-    :target: http://aslack.readthedocs.org/en/latest/?badge=latest
-    :alt: Documentation Status
-
 .. image:: https://coveralls.io/repos/textbook/aslack/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/textbook/aslack?branch=master
     :alt: Code Coverage
@@ -49,7 +45,7 @@ Asynchronous HTTP and WebSocket functionality is provided by aiohttp_ (version
 Documentation
 -------------
 
-aSlack's documentation is available on ReadTheDocs_.
+aSlack's documentation is available on PythonHosted_.
 
 Installation
 ------------
@@ -71,4 +67,4 @@ development dependencies using::
 .. _aiohttp: http://aiohttp.rtfd.org/
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
 .. _PyPI: https://pypi.python.org/pypi
-.. _ReadTheDocs: http://aslack.readthedocs.org/en/latest/
+.. _PythonHosted: http://pythonhosted.org/aslack/
