@@ -9,7 +9,18 @@ API_TOKEN_ENV = 'SLACK_API_TOKEN'
 
 
 class FriendlyError(Exception):
-    """Exception with friendlier error messages."""
+    """Exception with friendlier error messages.
+
+      Notes:
+        The ``err_msg`` is resolved in :py:attr:`EXPECTED_ERRORS`,
+        or passed through as-is if not found there.
+
+      Arguments:
+        err_msg (:py:class:`str`): The error message to attempt to
+          resolve.
+        *args (:py:class:`tuple`): Any additional positional arguments.
+
+    """
 
     EXPECTED_ERRORS = {}
     """Friendly messages for expected errors."""
@@ -22,11 +33,11 @@ def raise_for_status(response):
     """Raise an appropriate error for a given response.
 
     Arguments:
-      response (aiohttp.ClientResponse): The API response.
+      response (:py:class:`aiohttp.ClientResponse`): The API response.
 
     Raises:
-      aiohttp.web_exceptions.HTTPException: The appropriate error
-        for the response's status.
+      :py:class:`aiohttp.web_exceptions.HTTPException`: The appropriate
+        error for the response's status.
 
     """
     for err_name in web_exceptions.__all__:
@@ -42,7 +53,16 @@ def raise_for_status(response):
 
 
 def get_api_token():
-    """Allow the user to enter their API token."""
+    """Allow the user to enter their API token.
+
+    Note:
+      The token is added to the environment using the variable defined
+      in :py:attr:`API_TOKEN_ENV`.
+
+    Returns:
+      :py:class:`str`: The user's API token.
+
+    """
     token = os.getenv(API_TOKEN_ENV)
     if token:
         return token

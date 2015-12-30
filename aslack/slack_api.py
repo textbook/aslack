@@ -157,19 +157,20 @@ class SlackApi:
     async def execute_method(self, method, **params):
         """Execute a specified Slack Web API method.
 
-        Notes:
+        Note:
           The API token is added automatically by this method.
 
         Arguments:
-          method (str): The name of the method.
-          **params (dict): Any additional parameters required.
+          method (:py:class:`str`): The name of the method.
+          **params (:py:class:`dict`): Any additional parameters
+            required.
 
         Returns:
-          dict: The JSON data from the response.
+          :py:class:`dict`: The JSON data from the response.
 
         Raises:
-          aiohttp.web_exceptions.HTTPException: If the HTTP request
-            returns a code other than 200 (OK).
+          :py:class:`aiohttp.web_exceptions.HTTPException`: If the HTTP
+            request returns a code other than 200 (OK).
           SlackApiError: If the Slack API is reached but the response
            contains an error message.
 
@@ -195,10 +196,10 @@ class SlackApi:
         """Create the full API URL for a given method.
 
         Arguments:
-          method (str): The name of the method.
+          method (:py:class:`str`): The name of the method.
 
         Returns:
-          str: The full API URL.
+          :py:class:`str`: The full API URL.
 
         Raises:
           SlackApiError: If the method is unknown.
@@ -212,15 +213,16 @@ class SlackApi:
     def _method_exists(cls, method):
         """Whether a given method exists in the known API.
 
-        Notes:
-          ``SlackApi`` and its subclasses provide a dictionary of
-          ``API_METHODS``, a class attribute defining the known API.
+        Note:
+          :py:class:`SlackApi` and its subclasses provide a dictionary
+          of :py:attr:`API_METHODS`, a class attribute defining the
+          known API.
 
         Arguments:
-          method (str): The name of the method.
+          method (:py:class:`str`): The name of the method.
 
         Returns:
-          bool: Whether the method is in the known API.
+          :py:class:`bool`: Whether the method is in the known API.
 
         """
         methods = cls.API_METHODS

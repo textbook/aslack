@@ -35,6 +35,7 @@ needs_sphinx = '1.3'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
@@ -42,6 +43,7 @@ extensions = [
 
 intersphinx_mapping = {
     'python': ('http://docs.python.org/3', None),
+    'aiohttp': ('http://aiohttp.readthedocs.org/en/stable/', None),
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -138,6 +140,8 @@ html_theme_options = dict(
     github_repo=aslack.__name__,
     github_user='textbook',
     logo='aslack-logo-128x128.png',
+    note_bg='#E5ECD1',
+    note_border='#BFCF8C',
 )
 
 # Add any paths that contain custom themes here, relative to this directory.

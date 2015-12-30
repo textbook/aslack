@@ -39,7 +39,7 @@ async def test_get_socket_url():
         **{'execute_method.return_value': {'url': 'foo'}},
     )
     bot = SlackBot(None, None, api)
-    url = await bot._get_socket_url()
+    url = await bot.get_socket_url()
     assert url == 'foo'
     api.execute_method.assert_called_once_with('rtm.start')
 
@@ -93,7 +93,7 @@ def test_handle_message_dispatch(randint):
     mock_message = mock.Mock(data='{}')
     mock_filter_ = mock.Mock(return_value=True)
     mock_dispatch = mock.Mock(return_value=dict(channel='foo', text='bar'))
-    response = bot._handle_message(mock_message, {mock_filter_: mock_dispatch})
+    response = bot.handle_message(mock_message, {mock_filter_: mock_dispatch})
     expected = dict(
         id=randint.return_value,
         type='message',
@@ -116,20 +116,20 @@ def test_handle_help_message(randint):
         text=SlackBot._instruction_list({}),
         type='message',
     )
-    response = bot._handle_message(mock_msg, {})
+    response = bot.handle_message(mock_msg, {})
     assert json.loads(response) == expected
 
 def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
     with pytest.raises(SlackApiError):
-        bot._handle_message(mock_msg, {})
+        bot.handle_message(mock_msg, {})
 
 
 def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
-    bot._handle_message(mock_msg, {lambda msg: False: None})
+    bot.handle_message(mock_msg, {lambda msg: False: None})
 
 
 @pytest.mark.parametrize('input_,output', [

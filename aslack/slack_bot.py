@@ -39,8 +39,8 @@ class SlackBot:
         """Initialise the new bot.
 
         Arguments:
-          id_ (str): The bot's Slack ID.
-          user (str): The bot's friendly name.
+          id_ (:py:class:`str`): The bot's Slack ID.
+          user (:py:class:`str`): The bot's friendly name.
           api (SlackApi): The Slack API wrapper.
 
         """
@@ -51,26 +51,71 @@ class SlackBot:
         self.address_as = '{}: '.format(self.full_name)
         self._msg_ids = count(randint(1, 1000))
 
+    async def get_socket_url(self):
+        """Get the WebSocket URL for the RTM session.
+
+        Warning:
+          The URL expires if the session is not joined within 30
+          seconds of the API call to the start endpoint.
+
+        Returns:
+          :py:class:`str`: The socket URL.
+
+        """
+        data = await self.api.execute_method(self.RTM_START_ENDPOINT)
+        return data['url']
+
+    def handle_message(self, message, filters):
+        """Handle an incoming message appropriately.
+
+        Arguments:
+          message (:py:class:`aiohttp.websocket.Message`): The incoming
+            message to handle.
+          filters (:py:class:`dict`): The filters to apply to incoming
+            messages.
+
+        Returns:
+          :py:class:`str`: The response to send as a result.
+
+        """
+        data = self._unpack_message(message)
+        logger.debug(data)
+        if data.get('type') == 'error':
+            raise SlackApiError(
+                data.get('error', {}).get('msg', str(data))
+            )
+        elif (self.message_is_to_me(data) and
+              data['text'][len(self.address_as):].strip() == '?'):
+            return self._format_message(
+                channel=data['channel'],
+                text=self._instruction_list(filters),
+            )
+        for filter_, dispatch in filters.items():
+            if filter_(data):
+                logger.debug('Response triggered')
+                return self._format_message(**dispatch(data))
+
     async def join_rtm(self, filters=None):
         """Join the real-time messaging service.
 
         Arguments:
-          filters (dict, optional): Dictionary mapping message filters
-            to the functions they should dispatch to. Use an
-            OrderedDict if precedence is important; only one filter,
-            the first match, will be applied to each message.
+          filters (:py:class:`dict`, optional): Dictionary mapping
+            message filters to the functions they should dispatch to.
+            Use a :py:class:`collections.OrderedDict` if precedence is
+            important; only one filter, the first match, will be
+            applied to each message.
 
         """
         if filters is None:
             filters = self.MESSAGE_FILTERS
-        url = await self._get_socket_url()
+        url = await self.get_socket_url()
         logger.debug('Connecting to {!r}'.format(url))
         async with aiohttp.ws_connect(url) as socket:
             first_msg = await socket.receive()
             self._validate_first_message(first_msg)
             async for message in socket:
                 if message.tp == aiohttp.MsgType.text:
-                    result = self._handle_message(message, filters)
+                    result = self.handle_message(message, filters)
                     if result is not None:
                         socket.send_str(result)
                 elif message.tp in (MsgType.closed, MsgType.error):
@@ -94,7 +139,7 @@ class SlackBot:
         """Create a new instance from the API token.
 
         Arguments:
-          token (str): The bot's API token.
+          token (:py:class:`str`): The bot's API token.
 
         Returns:
           SlackBot: The new instance.
@@ -107,12 +152,12 @@ class SlackBot:
     def _format_message(self, channel, text):
         """Format an outoging message for transmission.
 
-        Notes:
-          Adds the message type ('message') and incremental ID.
+        Note:
+          Adds the message type (``'message'``) and incremental ID.
 
         Arguments:
-          channel (str): The channel to send to.
-          text (str): The message text to send.
+          channel (:py:class:`str`): The channel to send to.
+          text (:py:class:`str`): The message text to send.
 
         Returns:
           str: The JSON string of the message.
@@ -122,63 +167,23 @@ class SlackBot:
         payload.update(channel=channel, text=text)
         return json.dumps(payload)
 
-    async def _get_socket_url(self):
-        """Get the WebSocket URL for the RTM session.
-
-        Notes:
-          The URL expires if the session is not joined within 30
-          seconds of the API call to the start endpoint.
-
-        Returns:
-          str: The socket URL.
-
-        """
-        data = await self.api.execute_method(self.RTM_START_ENDPOINT)
-        return data['url']
-
-    def _handle_message(self, message, filters):
-        """Handle an incoming message appropriately.
-
-        Arguments:
-          message (aiohttp.Message): The incoming message to handle.
-          filters (dict): The filters to apply to incoming messages.
-
-        Returns:
-          str: The response to send as a result.
-
-        """
-        data = self._unpack_message(message)
-        logger.debug(data)
-        if data.get('type') == 'error':
-            raise SlackApiError(
-                data.get('error', {}).get('msg', str(data))
-            )
-        elif (self.message_is_to_me(data) and
-              data['text'][len(self.address_as):].strip() == '?'):
-            return self._format_message(
-                channel=data['channel'],
-                text=self._instruction_list(filters),
-            )
-        for filter_, dispatch in filters.items():
-            if filter_(data):
-                logger.debug('Response triggered')
-                return self._format_message(**dispatch(data))
-
     @classmethod
     def _instruction_list(cls, filters):
         """Generates the instructions for a bot and its filters.
 
-        Notes:
+        Note:
           The guidance for each filter is generated by combining the
           docstrings of the predicate filter and resulting dispatch
           function with a single space between. The class's
-          ``INSTRUCTIONS`` and the default help command are added.
+          :py:attr:`INSTRUCTIONS` and the default help command are
+          added.
 
         Arguments:
-          filters (dict): The filters to apply to incoming messages.
+          filters (:py:class:`dict`): The filters to apply to incoming
+            messages.
 
         Returns:
-          str: The bot's instructions.
+          :py:class:`str`: The bot's instructions.
 
         """
         return '\n\n'.join([
@@ -196,7 +201,7 @@ class SlackBot:
         """Check the first message matches the expected handshake.
 
         Arguments:
-          msg (aiohttp.Message): The message to validate.
+          msg (:py:class:`aiohttp.Message`): The message to validate.
 
         Raises:
           SlackApiError: If the data doesn't match the handshake.
@@ -213,14 +218,15 @@ class SlackBot:
         """Unpack the data from the message.
 
         Arguments:
-          msg (aiohttp.Message): The message to unpack.
+          msg (:py:class:`aiohttp.Message`): The message to unpack.
 
         Returns:
-          dict: The loaded data.
+          :py:class:`dict`: The loaded data.
 
         Raises:
-          AttributeError: If there is no data attribute.
-          json.JSONDecodeError: If the data isn't valid JSON.
+          :py:class:`AttributeError`: If there is no data attribute.
+          :py:class:`json.JSONDecodeError`: If the data isn't valid
+            JSON.
 
         """
         return json.loads(msg.data)
