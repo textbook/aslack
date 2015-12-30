@@ -6,7 +6,7 @@ import pytest
 
 from aslack.slack_api import SlackApiError, SlackBotApi
 from aslack.slack_bot import SlackBot
-from helpers import async_context_manager_factory, async_iterable_factory
+from helpers import AsyncContextManager, AsyncIterable
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
@@ -168,8 +168,10 @@ def test_instruction_list():
 @mock.patch('aslack.slack_bot.ws_connect')
 @pytest.mark.asyncio
 async def test_join_rtm_simple(ws_connect):
-    ws_connect.return_value = async_context_manager_factory(
-        async_iterable_factory(receive=mock.Mock(data='{"type": "hello"}'))
+    ws_connect.return_value = AsyncContextManager(
+        AsyncIterable.from_test_data(
+            receive=mock.Mock(data='{"type": "hello"}'),
+        )
     )
     api = mock.CoroutineMock(
         spec=SlackBotApi,
@@ -188,13 +190,13 @@ async def test_join_rtm_simple(ws_connect):
 @pytest.mark.asyncio
 async def test_join_rtm_error_messages(ws_connect, closed, calls):
     mock_msg = mock.Mock(tp=aiohttp.MsgType.closed)
-    mock_socket = async_iterable_factory(
+    mock_socket = AsyncIterable.from_test_data(
         mock_msg,
         close=None,
         receive=mock.Mock(data='{"type": "hello"}'),
     )
     mock_socket.closed = closed
-    ws_connect.return_value = async_context_manager_factory(mock_socket)
+    ws_connect.return_value = AsyncContextManager(mock_socket)
     api = mock.CoroutineMock(
         spec=SlackBotApi,
         **{'execute_method.return_value': {'url': 'foo'}},
@@ -209,13 +211,13 @@ async def test_join_rtm_error_messages(ws_connect, closed, calls):
 @pytest.mark.asyncio
 async def test_join_rtm_messages(ws_connect):
     mock_msg = mock.Mock(tp=aiohttp.MsgType.text, data='{"type": "hello"}')
-    mock_socket = async_iterable_factory(
+    mock_socket = AsyncIterable.from_test_data(
         mock_msg,
         close=None,
         receive=mock.Mock(data='{"type": "hello"}'),
         send_str=None,
     )
-    ws_connect.return_value = async_context_manager_factory(mock_socket)
+    ws_connect.return_value = AsyncContextManager(mock_socket)
     api = mock.CoroutineMock(
         spec=SlackBotApi,
         **{'execute_method.return_value': {'url': 'foo'}},
