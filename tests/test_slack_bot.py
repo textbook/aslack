@@ -1,10 +1,12 @@
 import json
 
+import aiohttp
 from asynctest import mock
 import pytest
 
 from aslack.slack_api import SlackApiError, SlackBotApi
 from aslack.slack_bot import SlackBot
+from helpers import async_context_manager_factory, async_iterable_factory
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
@@ -161,3 +163,66 @@ def test_instruction_list():
     assert instructions.endswith('foo bar')
     assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
     assert '"@username: ?"' in instructions
+
+
+@mock.patch('aslack.slack_bot.ws_connect')
+@pytest.mark.asyncio
+async def test_join_rtm_simple(ws_connect):
+    ws_connect.return_value = async_context_manager_factory(
+        async_iterable_factory(receive=mock.Mock(data='{"type": "hello"}'))
+    )
+    api = mock.CoroutineMock(
+        spec=SlackBotApi,
+        **{'execute_method.return_value': {'url': 'foo'}},
+    )
+    bot = SlackBot(None, None, api)
+    await bot.join_rtm()
+    api.execute_method.assert_called_once_with('rtm.start')
+
+
+@pytest.mark.parametrize('closed,calls', [
+    (True, 0),
+    (False, 1),
+])
+@mock.patch('aslack.slack_bot.ws_connect')
+@pytest.mark.asyncio
+async def test_join_rtm_error_messages(ws_connect, closed, calls):
+    mock_msg = mock.Mock(tp=aiohttp.MsgType.closed)
+    mock_socket = async_iterable_factory(
+        mock_msg,
+        close=None,
+        receive=mock.Mock(data='{"type": "hello"}'),
+    )
+    mock_socket.closed = closed
+    ws_connect.return_value = async_context_manager_factory(mock_socket)
+    api = mock.CoroutineMock(
+        spec=SlackBotApi,
+        **{'execute_method.return_value': {'url': 'foo'}},
+    )
+    bot = SlackBot(None, None, api)
+    await bot.join_rtm()
+    api.execute_method.assert_called_once_with('rtm.start')
+    assert mock_socket.close.call_count == calls
+
+
+@mock.patch('aslack.slack_bot.ws_connect')
+@pytest.mark.asyncio
+async def test_join_rtm_messages(ws_connect):
+    mock_msg = mock.Mock(tp=aiohttp.MsgType.text, data='{"type": "hello"}')
+    mock_socket = async_iterable_factory(
+        mock_msg,
+        close=None,
+        receive=mock.Mock(data='{"type": "hello"}'),
+        send_str=None,
+    )
+    ws_connect.return_value = async_context_manager_factory(mock_socket)
+    api = mock.CoroutineMock(
+        spec=SlackBotApi,
+        **{'execute_method.return_value': {'url': 'foo'}},
+    )
+    bot = SlackBot(None, None, api)
+    await bot.join_rtm({
+        lambda msg: True: lambda msg: {'channel': 'foo', 'text': 'bar'},
+    })
+    api.execute_method.assert_called_once_with('rtm.start')
+    assert mock_socket.send_str.call_count == 1

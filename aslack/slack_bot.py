@@ -6,8 +6,7 @@ import logging
 from random import randint
 from textwrap import dedent
 
-import aiohttp
-from aiohttp import MsgType
+from aiohttp import MsgType, ws_connect
 
 from .slack_api import SlackApiError, SlackBotApi
 
@@ -116,11 +115,11 @@ class SlackBot:
             filters = self.MESSAGE_FILTERS
         url = await self.get_socket_url()
         logger.debug('Connecting to {!r}'.format(url))
-        async with aiohttp.ws_connect(url) as socket:
+        async with ws_connect(url) as socket:
             first_msg = await socket.receive()
             self._validate_first_message(first_msg)
             async for message in socket:
-                if message.tp == aiohttp.MsgType.text:
+                if message.tp == MsgType.text:
                     result = self.handle_message(message, filters)
                     if result is not None:
                         socket.send_str(result)
