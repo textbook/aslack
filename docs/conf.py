@@ -13,6 +13,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+from datetime import date
 import os
 import shlex
 import sys
@@ -27,7 +28,7 @@ import aslack
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-#needs_sphinx = '1.0'
+needs_sphinx = '1.3'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -38,6 +39,10 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
 ]
+
+intersphinx_mapping = {
+    'python': ('http://docs.python.org/3', None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -55,7 +60,10 @@ master_doc = 'index'
 
 # General information about the project.
 project = aslack.__name__
-copyright = '2015, {}'.format(aslack.__author__)
+copyright = '2015-{year}, {author}'.format(
+    year=date.today().year,
+    author=aslack.__author__,
+)
 author = aslack.__author__
 
 # The version info for the project you're documenting, acts as replacement for
@@ -102,6 +110,8 @@ exclude_patterns = ['_build']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+highlight_language = 'python3'
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
@@ -116,12 +126,19 @@ todo_include_todos = True
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = dict(
+    description=aslack.__doc__,
+    github_banner=True,
+    github_button=False,
+    github_repo=aslack.__name__,
+    github_user='textbook',
+    logo='aslack-logo-128x128.png',
+)
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
@@ -140,7 +157,7 @@ html_theme = 'sphinx_rtd_theme'
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
 # pixels large.
-#html_favicon = None
+html_favicon = '_static/aslack-icon-32x32.ico'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -161,7 +178,9 @@ html_static_path = ['_static']
 #html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+html_sidebars = {
+    '**': ['about.html', 'navigation.html', 'searchbox.html']
+}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.

@@ -5,9 +5,11 @@ aSlack
 
 .. image:: https://img.shields.io/pypi/v/aslack.svg
     :target: https://pypi.python.org/pypi/aslack
+    :alt: PyPI Version
 
 .. image:: https://travis-ci.org/textbook/aslack.svg
     :target: https://travis-ci.org/textbook/aslack
+    :alt: Travis Build Status
 
 .. image:: https://readthedocs.org/projects/aslack/badge/?version=latest
     :target: http://aslack.readthedocs.org/en/latest/?badge=latest
@@ -15,13 +17,15 @@ aSlack
 
 .. image:: https://coveralls.io/repos/textbook/aslack/badge.svg?branch=master&service=github
     :target: https://coveralls.io/github/textbook/aslack?branch=master
+    :alt: Code Coverage
 
 .. image:: https://www.quantifiedcode.com/api/v1/project/482551d8368740c68fb1d3e80c4f6664/badge.svg
     :target: https://www.quantifiedcode.com/app/project/482551d8368740c68fb1d3e80c4f6664
-    :alt: Code issues
+    :alt: Code Issues
 
 .. image:: https://img.shields.io/badge/license-ISC-blue.svg
     :target: https://github.com/textbook/aslack/blob/master/LICENSE
+    :alt: ISC License
 
 aSlack is a lightweight, asynchronous wrapper for Slack's Web and Real-Time
 Messaging (RTM) APIs, designed to allow the easy development of Slack tools and
