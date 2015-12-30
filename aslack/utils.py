@@ -12,7 +12,7 @@ class FriendlyError(Exception):
     """Exception with friendlier error messages.
 
       Notes:
-        The ``err_msg`` is resolved in :py:attr:`EXPECTED_ERRORS`,
+        The ``err_msg`` is resolved in :py:data:`EXPECTED_ERRORS`,
         or passed through as-is if not found there.
 
       Arguments:
