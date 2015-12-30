@@ -6,6 +6,11 @@ import sys
 
 import aslack
 
+if sys.version_info < (3, 5):
+    err_msg = '{} requires Python 3.5 or above'.format(aslack.__name__)
+    raise RuntimeError(err_msg)
+
+
 here = os.path.abspath(os.path.dirname(__file__))
 
 
