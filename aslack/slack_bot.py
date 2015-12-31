@@ -150,11 +150,13 @@ class SlackBot:
                 data.get('text', '').startswith(self.address_as))
 
     @classmethod
-    async def from_api_token(cls, token, api_cls=SlackBotApi):
+    async def from_api_token(cls, token=None, api_cls=SlackBotApi):
         """Create a new instance from the API token.
 
         Arguments:
-          token (:py:class:`str`): The bot's API token.
+          token (:py:class:`str`, optional): The bot's API token
+            (defaults to ``None``, which means looking in the
+            environment or taking user input).
           api_cls (:py:class:`type`, optional): The class to create
             as the ``api`` argument for API access (defaults to
             :py:class:`aslack.slack_api.SlackBotApi`).
