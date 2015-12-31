@@ -43,7 +43,11 @@ async def test_get_socket_url():
     bot = SlackBot(None, None, api)
     url = await bot.get_socket_url()
     assert url == 'foo'
-    api.execute_method.assert_called_once_with('rtm.start')
+    api.execute_method.assert_called_once_with(
+        'rtm.start',
+        simple_latest=True,
+        no_unreads=True,
+    )
 
 
 def test_unpack_message_success():
@@ -179,7 +183,11 @@ async def test_join_rtm_simple(ws_connect):
     )
     bot = SlackBot(None, None, api)
     await bot.join_rtm()
-    api.execute_method.assert_called_once_with('rtm.start')
+    api.execute_method.assert_called_once_with(
+        'rtm.start',
+        simple_latest=True,
+        no_unreads=True,
+    )
 
 
 @pytest.mark.parametrize('closed,calls', [
@@ -203,7 +211,11 @@ async def test_join_rtm_error_messages(ws_connect, closed, calls):
     )
     bot = SlackBot(None, None, api)
     await bot.join_rtm()
-    api.execute_method.assert_called_once_with('rtm.start')
+    api.execute_method.assert_called_once_with(
+        'rtm.start',
+        simple_latest=True,
+        no_unreads=True,
+    )
     assert mock_socket.close.call_count == calls
 
 
@@ -226,5 +238,9 @@ async def test_join_rtm_messages(ws_connect):
     await bot.join_rtm({
         lambda msg: True: lambda msg: {'channel': 'foo', 'text': 'bar'},
     })
-    api.execute_method.assert_called_once_with('rtm.start')
+    api.execute_method.assert_called_once_with(
+        'rtm.start',
+        simple_latest=True,
+        no_unreads=True,
+    )
     assert mock_socket.send_str.call_count == 1

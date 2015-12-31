@@ -19,7 +19,7 @@ class SlackBot:
         Arguments:
           id_ (:py:class:`str`): The bot's Slack ID.
           user (:py:class:`str`): The bot's friendly name.
-          api (SlackApi): The Slack API wrapper.
+          api (:py:class:`SlackApi`): The Slack API wrapper.
 
         Attributes:
           address_as (:py:class:`str`): The text that appears at the
@@ -73,7 +73,11 @@ class SlackBot:
           :py:class:`str`: The socket URL.
 
         """
-        data = await self.api.execute_method(self.RTM_START_ENDPOINT)
+        data = await self.api.execute_method(
+            self.RTM_START_ENDPOINT,
+            simple_latest=True,
+            no_unreads=True,
+        )
         return data['url']
 
     def handle_message(self, message, filters):
@@ -146,17 +150,20 @@ class SlackBot:
                 data.get('text', '').startswith(self.address_as))
 
     @classmethod
-    async def from_api_token(cls, token):
+    async def from_api_token(cls, token, api_cls=SlackBotApi):
         """Create a new instance from the API token.
 
         Arguments:
           token (:py:class:`str`): The bot's API token.
+          api_cls (:py:class:`type`, optional): The class to create
+            as the ``api`` argument for API access (defaults to
+            :py:class:`aslack.slack_api.SlackBotApi`).
 
         Returns:
-          SlackBot: The new instance.
+          :py:class:`SlackBot`: The new instance.
 
         """
-        api = SlackBotApi(token)
+        api = api_cls(token)
         data = await api.execute_method(cls.API_AUTH_ENDPOINT)
         return cls(data['user_id'], data['user'], api)
 
@@ -171,7 +178,7 @@ class SlackBot:
           text (:py:class:`str`): The message text to send.
 
         Returns:
-          str: The JSON string of the message.
+          :py:class:`str`: The JSON string of the message.
 
         """
         payload = {'type': 'message', 'id': next(self._msg_ids)}
@@ -211,11 +218,15 @@ class SlackBot:
     def _validate_first_message(cls, msg):
         """Check the first message matches the expected handshake.
 
+        Note:
+          The handshake is provided as :py:attr:`RTM_HANDSHAKE`.
+
         Arguments:
           msg (:py:class:`aiohttp.Message`): The message to validate.
 
         Raises:
-          SlackApiError: If the data doesn't match the handshake.
+          :py:class:`SlackApiError`: If the data doesn't match the
+            expected handshake.
 
         """
         data = cls._unpack_message(msg)
@@ -229,7 +240,8 @@ class SlackBot:
         """Unpack the data from the message.
 
         Arguments:
-          msg (:py:class:`aiohttp.Message`): The message to unpack.
+          msg (:py:class:`aiohttp.websocket.Message`): The message to
+            unpack.
 
         Returns:
           :py:class:`dict`: The loaded data.

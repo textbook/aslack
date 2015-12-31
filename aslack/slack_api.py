@@ -1,4 +1,10 @@
-"""Access to the base Slack Web API."""
+"""Access to the base Slack Web API.
+
+Attributes:
+  ALL (:py:class:`object`): Marker for cases where all child methods
+    should be deleted by :py:func:`api_subclass_factory`.
+
+"""
 
 from copy import deepcopy
 import logging
@@ -239,21 +245,26 @@ class SlackApi:
         return False
 
 
-_ALL = object()
+ALL = object()
 
 
-def _api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
+def api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
     """Create an API subclass with fewer methods than its base class.
 
     Arguments:
       name (:py:class:`str`): The name of the new class.
       docstring (:py:class:`str`): The docstring for the new class.
       remove_methods (:py:class:`dict`): The methods to remove from
-        the base class's :py:attr:`API_METHODS` for the subclass.
-      base (:py:class:`type`, optional): The base class.
+        the base class's :py:attr:`API_METHODS` for the subclass. The
+        key is the name of the root method (e.g. ``'auth'`` for
+        ``'auth.test'``, the value is either a tuple of child method
+        names (e.g. ``('test',)``) or, if all children should be
+        removed, the special value :py:const:`ALL`.
+      base (:py:class:`type`, optional): The base class (defaults to
+        :py:class:`SlackApi`).
 
     Returns:
-      type: The new SlackApi subclass.
+      :py:class:`type`: The new subclass.
 
     Raises:
       :py:class:`KeyError`: If the method wasn't in the superclass.
@@ -261,7 +272,7 @@ def _api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
     """
     methods = deepcopy(base.API_METHODS)
     for parent, to_remove in remove_methods.items():
-        if to_remove is _ALL:
+        if to_remove is ALL:
             del methods[parent]
         else:
             for method in to_remove:
@@ -269,7 +280,7 @@ def _api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
     return type(name, (base,), dict(API_METHODS=methods, __doc__=docstring))
 
 
-SlackBotApi = _api_subclass_factory(
+SlackBotApi = api_subclass_factory(
     'SlackBotApi',
     'API accessible to Slack custom bots.',
     remove_methods=dict(
@@ -279,22 +290,22 @@ SlackBotApi = _api_subclass_factory(
         groups=('archive', 'create', 'createChild', 'invite', 'kick', 'leave',
                 'rename', 'unarchive'),
         pins=('list',),
-        search=_ALL,
+        search=ALL,
         stars=('list',),
         team=('accessLogs', 'integrationLogs'),
-        usergroups=_ALL,
+        usergroups=ALL,
     ),
 )
 
 
-SlackAppBotApi = _api_subclass_factory(
+SlackAppBotApi = api_subclass_factory(
     'SlackAppBotApi',
     'API accessible to Slack app bots.',
     remove_methods=dict(
         channels=('history', 'mark', 'setPurpose', 'setTopic'),
-        emoji=_ALL,
+        emoji=ALL,
         groups=('close', 'history', 'mark', 'open', 'setPurpose', 'setTopic'),
-        team=_ALL,
+        team=ALL,
     ),
     base=SlackBotApi,
 )

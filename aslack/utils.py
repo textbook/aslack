@@ -1,11 +1,16 @@
-"""Utility functionality."""
+"""Utility functionality.
+
+Attributes:
+  API_TOKEN_ENV (:py:class:`str`): The environment variable to store
+    the user's API token in.
+
+"""
 
 import os
 
 from aiohttp import web_exceptions
 
 API_TOKEN_ENV = 'SLACK_API_TOKEN'
-"""The environment variable to store the user's API token in."""
 
 
 class FriendlyError(Exception):

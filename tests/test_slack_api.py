@@ -5,7 +5,7 @@ from asynctest import mock
 import pytest
 
 from aslack.slack_api import (
-    SlackApi, SlackApiError, _api_subclass_factory, _ALL,
+    SlackApi, SlackApiError, api_subclass_factory, ALL,
 )
 
 DUMMY_TOKEN = 'token'
@@ -84,13 +84,10 @@ def test_api_subclass_factory():
         (object,),
         {'FOO': object(), 'API_METHODS': base_methods},
     )
-    Child = _api_subclass_factory(
+    Child = api_subclass_factory(
         name=name,
         docstring=docstring,
-        remove_methods={
-            'keep none': _ALL,
-            'keep some': ('bar',),
-        },
+        remove_methods={'keep none': ALL, 'keep some': ('bar',)},
         base=Parent,
     )
     assert Child.FOO is Parent.FOO
