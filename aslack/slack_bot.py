@@ -1,6 +1,5 @@
 """A Slack bot using the real-time messaging API."""
 
-from html import escape
 from itertools import count
 import json
 import logging
@@ -209,8 +208,8 @@ class SlackBot:
         return '\n\n'.join([
             self.INSTRUCTIONS.strip(),
             '*Supported methods:*',
-            'If you send "{}?" to me I reply with these '
-            'instructions.'.format(escape(self.address_as)),
+            'If you send "&lt;@{}&gt;: ?" to me I reply with these '
+            'instructions.'.format(self.user),
         ] + [
             ' '.join((filter_.__doc__, dispatch.__doc__))
             for filter_, dispatch in filters.items()

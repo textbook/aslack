@@ -159,7 +159,7 @@ def test_mentions_me(input_, output):
 
 
 def test_instruction_list():
-    bot = SlackBot('foo', None, None)
+    bot = SlackBot(None, 'foo', None)
     def filter_():
         """foo"""
     def dispatch():
