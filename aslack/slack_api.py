@@ -16,6 +16,9 @@ from .utils import get_api_token, FriendlyError, raise_for_status
 logger = logging.getLogger(__name__)
 
 
+ALL = object()
+
+
 class SlackApiError(FriendlyError):
     """Wrapper exception for error messages in the response JSON."""
 
@@ -243,9 +246,6 @@ class SlackApi:
             logger.debug('{!r}: {!r}'.format(method, methods))
             return True
         return False
-
-
-ALL = object()
 
 
 def api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
