@@ -2,7 +2,7 @@ aslack package
 ==============
 
 Submodules
-----------
+**********
 
 aslack.slack_api module
 -----------------------
@@ -22,13 +22,5 @@ aslack.utils module
 -------------------
 
 .. automodule:: aslack.utils
-    :members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: aslack
     :members:
     :show-inheritance:
