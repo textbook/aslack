@@ -132,6 +132,7 @@ class SlackBot:
                 if message.tp == MsgType.text:
                     result = self.handle_message(message, filters)
                     if result is not None:
+                        logger.info('Sending message: {!r}'.format(result))
                         socket.send_str(result)
                 elif message.tp in (MsgType.closed, MsgType.error):
                     if not socket.closed:
