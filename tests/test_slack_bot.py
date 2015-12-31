@@ -167,7 +167,7 @@ def test_instruction_list():
     instructions = bot._instruction_list({filter_: dispatch})
     assert instructions.endswith('foo bar')
     assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
-    assert '"&lt;@foo&gt;: ?"' in instructions
+    assert '"@foo: ?"' in instructions
 
 
 @mock.patch('aslack.slack_bot.ws_connect')
