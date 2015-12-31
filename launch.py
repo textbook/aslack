@@ -14,6 +14,7 @@ logging.basicConfig(
 
 
 class Halliwell(slack_bot.SlackBot):
+    """Trivial bot with slightly more useful instructions."""
 
     INSTRUCTIONS = dedent("""
     Hello, I am an aSlack bot running on Cloud Foundry.
