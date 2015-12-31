@@ -1,5 +1,6 @@
 """Access to the base Slack Web API."""
 
+from copy import deepcopy
 import logging
 
 import aiohttp
@@ -37,7 +38,7 @@ class SlackApi:
     API_BASE_URL = 'https://slack.com/api'
 
     API_METHODS = {
-        'api': {'test': {'Checks API calling code.'}},
+        'api': {'test': 'Checks API calling code.'},
         'auth': {'test': 'Checks authentication & identity.'},
         'channels': {
             'archive': 'Archives a channel.',
@@ -238,157 +239,62 @@ class SlackApi:
         return False
 
 
-class SlackBotApi(SlackApi):
-    """API accessible to Slack custom bots."""
-
-    API_METHODS = {
-        'api': {'test': {'Checks API calling code.'}},
-        'auth': {'test': 'Checks authentication & identity.'},
-        'channels': {
-            'history': 'Fetches history of messages and events from a channel.',
-            'info': 'Gets information about a channel.',
-            'list': 'Lists all channels in a Slack team.',
-            'mark': 'Sets the read cursor in a channel.',
-            'setPurpose': 'Sets the purpose for a channel.',
-            'setTopic': 'Sets the topic for a channel.',
-        },
-        'chat': {
-            'delete': 'Deletes a message.',
-            'postMessage': 'Sends a message to a channel.',
-            'update': 'Updates a message.'
-        },
-        'emoji': {'list': '	Lists custom emoji for a team.'},
-        'files': {
-            'delete': 'Deletes a file.',
-            'upload': 'Uploads or creates a file.'
-        },
-        'groups': {
-            'close': 'Closes a private channel.',
-            'history': 'Fetches history of messages and events from a private '
-                       'channel.',
-            'info': 'Gets information about a private channel.',
-            'list': 'Lists private channels that the calling user has access '
-                    'to.',
-            'mark': 'Sets the read cursor in a private channel.',
-            'open': 'Opens a private channel.',
-            'rename': 'Renames a private channel.',
-            'setPurpose': 'Sets the purpose for a private channel.',
-            'setTopic': 'Sets the topic for a private channel.',
-        },
-        'im': {
-            'close': 'Close a direct message channel.',
-            'history': 'Fetches history of messages and events from direct '
-                       'message channel.',
-            'list': 'Lists direct message channels for the calling user.',
-            'mark': 'Sets the read cursor in a direct message channel.',
-            'open': 'Opens a direct message channel.',
-        },
-        'mpim': {
-            'close': 'Closes a multiparty direct message channel.',
-            'history': 'Fetches history of messages and events from a '
-                       'multiparty direct message.',
-            'list': 'Lists multiparty direct message channels for the calling '
-                    'user.',
-            'mark': 'Sets the read cursor in a multiparty direct message '
-                    'channel.',
-            'open': 'This method opens a multiparty direct message.',
-        },
-        'oauth': {
-            'access': 'Exchanges a temporary OAuth code for an API token.'
-        },
-        'pins': {
-            'add': 'Pins an item to a channel.',
-            'remove': 'Un-pins an item from a channel.',
-        },
-        'reactions': {
-            'add': 'Adds a reaction to an item.',
-            'get': 'Gets reactions for an item.',
-            'list': 'Lists reactions made by a user.',
-            'remove': 'Removes a reaction from an item.',
-        },
-        'rtm': {'start': 'Starts a Real Time Messaging session.'},
-        'stars': {
-            'add': 'Adds a star to an item.',
-            'remove': 'Removes a star from an item.',
-        },
-        'team': {'info': 'Gets information about the current team.'},
-        'users': {
-            'getPresence': 'Gets user presence information.',
-            'info': 'Gets information about a user.',
-            'list': 'Lists all users in a Slack team.',
-            'setActive': 'Marks a user as active.',
-            'setPresence': 'Manually sets user presence.',
-        },
-    }
-    """The API methods defined by Slack."""
+_ALL = object()
 
 
-class SlackAppBotApi(SlackApi):
-    """API accessible to Slack app bots."""
+def _api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
+    """Create an API subclass with fewer methods than its base class.
 
-    API_METHODS = {
-        'api': {'test': {'Checks API calling code.'}},
-        'auth': {'test': 'Checks authentication & identity.'},
-        'channels': {
-            'info': 'Gets information about a channel.',
-            'list': 'Lists all channels in a Slack team.',
-        },
-        'chat': {
-            'delete': 'Deletes a message.',
-            'postMessage': 'Sends a message to a channel.',
-            'update': 'Updates a message.'
-        },
-        'files': {
-            'delete': 'Deletes a file.',
-            'upload': 'Uploads or creates a file.'
-        },
-        'groups': {
-            'info': 'Gets information about a private channel.',
-            'list': 'Lists private channels that the calling user has access '
-                    'to.',
-        },
-        'im': {
-            'close': 'Close a direct message channel.',
-            'history': 'Fetches history of messages and events from direct '
-                       'message channel.',
-            'list': 'Lists direct message channels for the calling user.',
-            'mark': 'Sets the read cursor in a direct message channel.',
-            'open': 'Opens a direct message channel.',
-        },
-        'mpim': {
-            'close': 'Closes a multiparty direct message channel.',
-            'history': 'Fetches history of messages and events from a '
-                       'multiparty direct message.',
-            'list': 'Lists multiparty direct message channels for the calling '
-                    'user.',
-            'mark': 'Sets the read cursor in a multiparty direct message '
-                    'channel.',
-            'open': 'This method opens a multiparty direct message.',
-        },
-        'oauth': {
-            'access': 'Exchanges a temporary OAuth code for an API token.'
-        },
-        'pins': {
-            'add': 'Pins an item to a channel.',
-            'remove': 'Un-pins an item from a channel.',
-        },
-        'reactions': {
-            'add': 'Adds a reaction to an item.',
-            'get': 'Gets reactions for an item.',
-            'list': 'Lists reactions made by a user.',
-            'remove': 'Removes a reaction from an item.',
-        },
-        'rtm': {'start': 'Starts a Real Time Messaging session.'},
-        'stars': {
-            'add': 'Adds a star to an item.',
-            'remove': 'Removes a star from an item.',
-        },
-        'users': {
-            'getPresence': 'Gets user presence information.',
-            'info': 'Gets information about a user.',
-            'list': 'Lists all users in a Slack team.',
-            'setActive': 'Marks a user as active.',
-            'setPresence': 'Manually sets user presence.',
-        },
-    }
-    """The API methods defined by Slack."""
+    Arguments:
+      name (:py:class:`str`): The name of the new class.
+      docstring (:py:class:`str`): The docstring for the new class.
+      remove_methods (:py:class:`dict`): The methods to remove from
+        the base class's :py:attr:`API_METHODS` for the subclass.
+      base (:py:class:`type`, optional): The base class.
+
+    Returns:
+      type: The new SlackApi subclass.
+
+    Raises:
+      :py:class:`KeyError`: If the method wasn't in the superclass.
+
+    """
+    methods = deepcopy(base.API_METHODS)
+    for parent, to_remove in remove_methods.items():
+        if to_remove is _ALL:
+            del methods[parent]
+        else:
+            for method in to_remove:
+                del methods[parent][method]
+    return type(name, (base,), dict(API_METHODS=methods, __doc__=docstring))
+
+
+SlackBotApi = _api_subclass_factory(
+    'SlackBotApi',
+    'API accessible to Slack custom bots.',
+    remove_methods=dict(
+        channels=('archive', 'create', 'invite', 'join', 'kick', 'leave',
+                  'rename', 'unarchive'),
+        files=('info', 'list'),
+        groups=('archive', 'create', 'createChild', 'invite', 'kick', 'leave',
+                'rename', 'unarchive'),
+        pins=('list',),
+        search=_ALL,
+        stars=('list',),
+        team=('accessLogs', 'integrationLogs'),
+        usergroups=_ALL,
+    ),
+)
+
+
+SlackAppBotApi = _api_subclass_factory(
+    'SlackAppBotApi',
+    'API accessible to Slack app bots.',
+    remove_methods=dict(
+        channels=('history', 'mark', 'setPurpose', 'setTopic'),
+        emoji=_ALL,
+        groups=('close', 'history', 'mark', 'open', 'setPurpose', 'setTopic'),
+        team=_ALL,
+    ),
+    base=SlackBotApi,
+)

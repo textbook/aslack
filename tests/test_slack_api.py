@@ -4,7 +4,9 @@ from aiohttp.web_exceptions import HTTPException
 from asynctest import mock
 import pytest
 
-from aslack.slack_api import SlackApi, SlackApiError
+from aslack.slack_api import (
+    SlackApi, SlackApiError, _api_subclass_factory, _ALL,
+)
 
 DUMMY_TOKEN = 'token'
 
@@ -63,3 +65,35 @@ def test_create_url(method, exists):
     else:
         with pytest.raises(SlackApiError):
             SlackApi._create_url(method)
+
+
+def test_api_subclass_factory():
+    base_methods = {
+        'keep none': {'foo': None, 'bar': None},
+        'keep all': {'foo': None, 'bar': None},
+        'keep some': {'foo': None, 'bar': None},
+    }
+    expected = {
+        'keep all': {'foo': None, 'bar': None},
+        'keep some': {'foo': None},
+    }
+    docstring = 'test docstring'
+    name = 'Child'
+    Parent = type(
+        'Parent',
+        (object,),
+        {'FOO': object(), 'API_METHODS': base_methods},
+    )
+    Child = _api_subclass_factory(
+        name=name,
+        docstring=docstring,
+        remove_methods={
+            'keep none': _ALL,
+            'keep some': ('bar',),
+        },
+        base=Parent,
+    )
+    assert Child.FOO is Parent.FOO
+    assert Child.__name__ == name
+    assert Child.__doc__ == docstring
+    assert Child.API_METHODS == expected
