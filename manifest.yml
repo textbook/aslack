@@ -2,4 +2,5 @@
 applications:
 - name: halliwell
   buildpack: https://github.com/cloudfoundry/python-buildpack#v1.5.3
+  command: python launch.py
   no-route: true
