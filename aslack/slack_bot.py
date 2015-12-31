@@ -1,5 +1,6 @@
 """A Slack bot using the real-time messaging API."""
 
+from html import escape
 from itertools import count
 import json
 import logging
@@ -140,12 +141,12 @@ class SlackBot:
         logger.info('Left real-time messaging.')
 
     def message_mentions_me(self, data):
-        """If you send a message that mentions the bot's name"""
+        """If you send a message that mentions me"""
         return (data.get('type') == 'message' and
                 self.full_name in data.get('text', ''))
 
     def message_is_to_me(self, data):
-        """If you send a message starting '@username: ' to the bot"""
+        """If you send a message directly to me"""
         return (data.get('type') == 'message' and
                 data.get('text', '').startswith(self.address_as))
 
@@ -187,8 +188,7 @@ class SlackBot:
         payload.update(channel=channel, text=text)
         return json.dumps(payload)
 
-    @classmethod
-    def _instruction_list(cls, filters):
+    def _instruction_list(self, filters):
         """Generates the instructions for a bot and its filters.
 
         Note:
@@ -207,10 +207,10 @@ class SlackBot:
 
         """
         return '\n\n'.join([
-            cls.INSTRUCTIONS.strip(),
+            self.INSTRUCTIONS.strip(),
             '*Supported methods:*',
-            'If you send "@username: ?" to the bot it replies with these '
-            'instructions.',
+            'If you send "{}?" to me I reply with these '
+            'instructions.'.format(escape(self.address_as)),
         ] + [
             ' '.join((filter_.__doc__, dispatch.__doc__))
             for filter_, dispatch in filters.items()

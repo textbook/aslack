@@ -119,7 +119,7 @@ def test_handle_help_message(randint):
     expected = dict(
         channel='bar',
         id=randint.return_value,
-        text=SlackBot._instruction_list({}),
+        text=bot._instruction_list({}),
         type='message',
     )
     response = bot.handle_message(mock_msg, {})
@@ -159,14 +159,15 @@ def test_mentions_me(input_, output):
 
 
 def test_instruction_list():
+    bot = SlackBot('foo', None, None)
     def filter_():
         """foo"""
     def dispatch():
         """bar"""
-    instructions = SlackBot._instruction_list({filter_: dispatch})
+    instructions = bot._instruction_list({filter_: dispatch})
     assert instructions.endswith('foo bar')
     assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
-    assert '"@username: ?"' in instructions
+    assert '"&lt;@foo&gt;: ?"' in instructions
 
 
 @mock.patch('aslack.slack_bot.ws_connect')
