@@ -12,7 +12,7 @@ class FriendlyError(Exception):
     """Exception with friendlier error messages.
 
       Notes:
-        The ``err_msg`` is resolved in :py:data:`EXPECTED_ERRORS`,
+        The ``err_msg`` is resolved in :py:attr:`EXPECTED_ERRORS`,
         or passed through as-is if not found there.
 
       Arguments:
@@ -57,7 +57,7 @@ def get_api_token():
 
     Note:
       The token is added to the environment using the variable defined
-      in :py:attr:`API_TOKEN_ENV`.
+      in :py:const:`API_TOKEN_ENV`.
 
     Returns:
       :py:class:`str`: The user's API token.

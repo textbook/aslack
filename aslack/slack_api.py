@@ -28,10 +28,13 @@ class SlackApi:
     Arguments:
       token (:py:class:`str`): The user's API token.
 
+    Attributes:
+      API_BASE_URL (:py:class:`str`): The base URL for Slack API calls.
+      API_METHODS (:py:class:`dict`): The API methods defined by Slack.
+
     """
 
     API_BASE_URL = 'https://slack.com/api'
-    """The base URL for Slack API calls."""
 
     API_METHODS = {
         'api': {'test': {'Checks API calling code.'}},
@@ -152,7 +155,6 @@ class SlackApi:
             'setPresence': 'Manually sets user presence.',
         },
     }
-    """The API methods defined by Slack."""
 
     def __init__(self, token=None):
         if token is None:
@@ -217,11 +219,6 @@ class SlackApi:
     @classmethod
     def _method_exists(cls, method):
         """Whether a given method exists in the known API.
-
-        Note:
-          :py:class:`SlackApi` and its subclasses provide a dictionary
-          of :py:attr:`API_METHODS`, a class attribute defining the
-          known API.
 
         Arguments:
           method (:py:class:`str`): The name of the method.

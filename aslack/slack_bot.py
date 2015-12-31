@@ -23,15 +23,24 @@ class SlackBot:
 
         Attributes:
           address_as (:py:class:`str`): The text that appears at the
-            start of messages address to this bot (e.g.
+            start of messages addressed to this bot (e.g.
             ``'<@user>: '``).
           full_name (:py:class:`str`): The name of the bot as it
             appears in messages about the bot (e.g. ``'<@user>'``).
+          API_AUTH_ENDPOINT (:py:class:`str`): Test endpoint for API
+            authorisation.
+          INSTRUCTIONS (:py:class:`str`): Message to give the user when
+            they request instructions.
+          MESSAGE_FILTERS (:py:class:`dict`): Default filters for
+            incoming messages
+          RTM_HANDSHAKE (:py:class:`dict`): Expected handshake message
+            from RTM API.
+          RTM_START_ENDPOINT (:py:class:`str`): Start endpoint for
+            real-time messaging.
 
         """
 
     API_AUTH_ENDPOINT = 'auth.test'
-    """Test endpoint for API authorisation."""
 
     INSTRUCTIONS = dedent("""
     These are the default instructions for an aSlack bot.
@@ -40,13 +49,10 @@ class SlackBot:
     """)
 
     MESSAGE_FILTERS = {}
-    """Default filters for incoming messages."""
 
     RTM_HANDSHAKE = {'type': 'hello'}
-    """Expected handshake message from RTM API."""
 
     RTM_START_ENDPOINT = 'rtm.start'
-    """Start endpoint for real-time messaging."""
 
     def __init__(self, id_, user, api):
         self.id_ = id_

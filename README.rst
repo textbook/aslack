@@ -55,12 +55,12 @@ with::
 
     pip install aslack
 
-Alternatively, download or clone this repository and use e.g.::
+Alternatively, clone or fork the repository and use e.g.::
 
     python setup.py develop
 
 to install locally for development. In this case, you should also install the
-development dependencies using::
+development dependencies (ideally in a ``virtualenv``) using::
 
     pip install -r requirements.txt
 
