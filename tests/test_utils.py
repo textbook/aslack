@@ -8,6 +8,7 @@ from aslack.utils import (
     get_api_token,
     FriendlyError,
     raise_for_status,
+    truncate,
 )
 
 
@@ -60,3 +61,13 @@ def test_raise_for_status(status, raises):
     else:
         with pytest.raises(raises):
             raise_for_status(response)
+
+
+@pytest.mark.parametrize('args,kwargs,output', [
+    (('',), {}, ''),
+    (('foo bar baz',), {}, 'foo bar baz'),
+    (('foo bar baz',), {'max_len': 10}, 'foo bar...'),
+    (('foo bar baz',), {'end': ' - ', 'max_len': 10}, 'foo bar - '),
+])
+def test_truncate(args, kwargs, output):
+    assert truncate(*args, **kwargs) == output
