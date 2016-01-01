@@ -106,9 +106,9 @@ class SlackBot:
                 text=self._instruction_list(filters),
             )
         for filter_, dispatch in filters.items():
-            if filter_(data):
+            if filter_(self, data):
                 logger.debug('Response triggered')
-                return self._format_message(**dispatch(data))
+                return self._format_message(**dispatch(self, data))
 
     async def join_rtm(self, filters=None):
         """Join the real-time messaging service.

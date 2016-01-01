@@ -106,8 +106,8 @@ def test_handle_message_dispatch(randint):
         **mock_dispatch.return_value,
     )
     assert json.loads(response) == expected
-    mock_filter_.assert_called_once_with({})
-    mock_dispatch.assert_called_once_with({})
+    mock_filter_.assert_called_once_with(bot, {})
+    mock_dispatch.assert_called_once_with(bot, {})
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
@@ -135,7 +135,7 @@ def test_handle_error_message():
 def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
-    bot.handle_message(mock_msg, {lambda msg: False: None})
+    bot.handle_message(mock_msg, {lambda self, msg: False: None})
 
 
 @pytest.mark.parametrize('input_,output', [
@@ -236,8 +236,9 @@ async def test_join_rtm_messages(ws_connect):
         **{'execute_method.return_value': {'url': 'foo'}},
     )
     bot = SlackBot(None, None, api)
+    data = {'channel': 'foo', 'text': 'bar'}
     await bot.join_rtm({
-        lambda msg: True: lambda msg: {'channel': 'foo', 'text': 'bar'},
+        lambda self, msg: True: lambda self, msg: data,
     })
     api.execute_method.assert_called_once_with(
         'rtm.start',
