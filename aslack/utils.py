@@ -95,4 +95,3 @@ def truncate(text, max_len=350, end='...'):
     if len(text) <= max_len:
         return text
     return text[:max_len].rsplit(' ', maxsplit=1)[0] + end
-
