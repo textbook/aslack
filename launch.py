@@ -1,9 +1,8 @@
 import asyncio
 import logging
-from textwrap import dedent
 import sys
 
-from aslack import __author__, slack_bot
+from examples.halliwell import Halliwell
 
 logging.basicConfig(
     datefmt='%Y/%m/%d %H.%M.%S',
@@ -11,19 +10,6 @@ logging.basicConfig(
     level=logging.INFO,
     stream=sys.stdout,
 )
-
-
-class Halliwell(slack_bot.SlackBot):
-    """Trivial bot with slightly more useful instructions."""
-
-    INSTRUCTIONS = dedent("""
-    Hello, I am an aSlack bot running on Cloud Foundry.
-
-    For more information, see {aslack_url} or contact {author}.
-    """.format(
-        aslack_url='https://pythonhosted.org/aslack',
-        author=__author__,
-    ))
 
 
 loop = asyncio.get_event_loop()
