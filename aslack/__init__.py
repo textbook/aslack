@@ -5,4 +5,4 @@ import logging
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __author__ = 'Jonathan Sharpe'
-__version__ = '0.3.3'
+__version__ = '0.4.0'
