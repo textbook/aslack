@@ -94,12 +94,13 @@ def test_format_message(randint):
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
-def test_handle_message_dispatch(randint):
+@pytest.mark.asyncio
+async def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
     mock_message = mock.Mock(data='{}')
     mock_filter_ = mock.Mock(return_value=True)
-    mock_dispatch = mock.Mock(return_value=dict(channel='foo', text='bar'))
-    response = bot.handle_message(mock_message, {mock_filter_: mock_dispatch})
+    mock_dispatch = mock.CoroutineMock(return_value=dict(channel='foo', text='bar'))
+    response = await bot.handle_message(mock_message, {mock_filter_: mock_dispatch})
     expected = dict(
         id=randint.return_value,
         type='message',
@@ -111,7 +112,8 @@ def test_handle_message_dispatch(randint):
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
-def test_handle_help_message(randint):
+@pytest.mark.asyncio
+async def test_handle_help_message(randint):
     bot = SlackBot('foo', None, None)
     mock_msg = mock.Mock(
         data=json.dumps(dict(channel='bar', text='<@foo>: ?', type='message')),
@@ -122,20 +124,23 @@ def test_handle_help_message(randint):
         text=bot._instruction_list({}),
         type='message',
     )
-    response = bot.handle_message(mock_msg, {})
+    response = await bot.handle_message(mock_msg, {})
     assert json.loads(response) == expected
 
-def test_handle_error_message():
+
+@pytest.mark.asyncio
+async def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
     with pytest.raises(SlackApiError):
-        bot.handle_message(mock_msg, {})
+        await bot.handle_message(mock_msg, {})
 
 
-def test_handle_unfiltered_message():
+@pytest.mark.asyncio
+async def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
-    bot.handle_message(mock_msg, {lambda self, msg: False: None})
+    await bot.handle_message(mock_msg, {lambda self, msg: False: None})
 
 
 @pytest.mark.parametrize('input_,output', [
@@ -238,7 +243,7 @@ async def test_join_rtm_messages(ws_connect):
     bot = SlackBot(None, None, api)
     data = {'channel': 'foo', 'text': 'bar'}
     await bot.join_rtm({
-        lambda self, msg: True: lambda self, msg: data,
+        lambda self, msg: True: mock.CoroutineMock(return_value=data),
     })
     api.execute_method.assert_called_once_with(
         'rtm.start',

@@ -17,27 +17,27 @@ logger = logging.getLogger(__name__)
 class SlackBot:
     """Base class Slack bot.
 
-        Arguments:
-          id_ (:py:class:`str`): The bot's Slack ID.
-          user (:py:class:`str`): The bot's friendly name.
-          api (:py:class:`SlackApi`): The Slack API wrapper.
+    Arguments:
+      id_ (:py:class:`str`): The bot's Slack ID.
+      user (:py:class:`str`): The bot's friendly name.
+      api (:py:class:`SlackApi`): The Slack API wrapper.
 
-        Attributes:
-          address_as (:py:class:`str`): The text that appears at the
-            start of messages addressed to this bot (e.g.
-            ``'<@user>: '``).
-          full_name (:py:class:`str`): The name of the bot as it
-            appears in messages about the bot (e.g. ``'<@user>'``).
-          API_AUTH_ENDPOINT (:py:class:`str`): Test endpoint for API
-            authorisation.
-          INSTRUCTIONS (:py:class:`str`): Message to give the user when
-            they request instructions.
-          MESSAGE_FILTERS (:py:class:`dict`): Default filters for
-            incoming messages
-          RTM_HANDSHAKE (:py:class:`dict`): Expected handshake message
-            from RTM API.
-          RTM_START_ENDPOINT (:py:class:`str`): Start endpoint for
-            real-time messaging.
+    Attributes:
+      address_as (:py:class:`str`): The text that appears at the
+        start of messages addressed to this bot (e.g.
+        ``'<@user>: '``).
+      full_name (:py:class:`str`): The name of the bot as it
+        appears in messages about the bot (e.g. ``'<@user>'``).
+      API_AUTH_ENDPOINT (:py:class:`str`): Test endpoint for API
+        authorisation.
+      INSTRUCTIONS (:py:class:`str`): Message to give the user when
+        they request instructions.
+      MESSAGE_FILTERS (:py:class:`dict`): Default filters for
+        incoming messages
+      RTM_HANDSHAKE (:py:class:`dict`): Expected handshake message
+        from RTM API.
+      RTM_START_ENDPOINT (:py:class:`str`): Start endpoint for
+        real-time messaging.
 
         """
 
@@ -81,7 +81,7 @@ class SlackBot:
         )
         return data['url']
 
-    def handle_message(self, message, filters):
+    async def handle_message(self, message, filters):
         """Handle an incoming message appropriately.
 
         Arguments:
@@ -109,7 +109,8 @@ class SlackBot:
         for filter_, dispatch in filters.items():
             if filter_(self, data):
                 logger.debug('Response triggered')
-                return self._format_message(**dispatch(self, data))
+                response = await dispatch(self, data)
+                return self._format_message(**response)
 
     async def join_rtm(self, filters=None):
         """Join the real-time messaging service.
@@ -131,7 +132,7 @@ class SlackBot:
             self._validate_first_message(first_msg)
             async for message in socket:
                 if message.tp == MsgType.text:
-                    result = self.handle_message(message, filters)
+                    result = await self.handle_message(message, filters)
                     if result is not None:
                         logger.info('Sending message: {!r}'.format(
                                 truncate(result, max_len=50),
