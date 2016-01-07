@@ -116,12 +116,33 @@ async def test_handle_message_dispatch(randint):
 async def test_handle_help_message(randint):
     bot = SlackBot('foo', None, None)
     mock_msg = mock.Mock(
-        data=json.dumps(dict(channel='bar', text='<@foo>: ?', type='message')),
+        data=json.dumps(
+            dict(channel='bar', text='<@foo>: help', type='message'),
+        ),
     )
     expected = dict(
         channel='bar',
         id=randint.return_value,
         text=bot._instruction_list({}),
+        type='message',
+    )
+    response = await bot.handle_message(mock_msg, {})
+    assert json.loads(response) == expected
+
+
+@mock.patch('aslack.slack_bot.randint', return_value=10)
+@pytest.mark.asyncio
+async def test_handle_version_message(randint):
+    bot = SlackBot('foo', None, None)
+    mock_msg = mock.Mock(
+        data=json.dumps(
+            dict(channel='bar', text='<@foo>: version', type='message'),
+        ),
+    )
+    expected = dict(
+        channel='bar',
+        id=randint.return_value,
+        text=bot.VERSION,
         type='message',
     )
     response = await bot.handle_message(mock_msg, {})
@@ -172,7 +193,7 @@ def test_instruction_list():
     instructions = bot._instruction_list({filter_: dispatch})
     assert instructions.endswith('foo bar')
     assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
-    assert '"@foo: ?"' in instructions
+    assert '"@foo: help"' in instructions and '"@foo: version"' in instructions
 
 
 @mock.patch('aslack.slack_bot.ws_connect')

@@ -8,6 +8,7 @@ from textwrap import dedent
 
 from aiohttp import MsgType, ws_connect
 
+from . import __name__, __version__
 from .slack_api import SlackApiError, SlackBotApi
 from .utils import truncate
 
@@ -38,8 +39,10 @@ class SlackBot:
         from RTM API.
       RTM_START_ENDPOINT (:py:class:`str`): Start endpoint for
         real-time messaging.
+      VERSION (:py:class:`str`): Version string to show to the user (if
+        not overridden, will show the aSlack version).
 
-        """
+    """
 
     API_AUTH_ENDPOINT = 'auth.test'
 
@@ -54,6 +57,8 @@ class SlackBot:
     RTM_HANDSHAKE = {'type': 'hello'}
 
     RTM_START_ENDPOINT = 'rtm.start'
+
+    VERSION = ' '.join((__name__, __version__))
 
     def __init__(self, id_, user, api):
         self.id_ = id_
@@ -100,12 +105,18 @@ class SlackBot:
             raise SlackApiError(
                 data.get('error', {}).get('msg', str(data))
             )
-        elif (self.message_is_to_me(data) and
-              data['text'][len(self.address_as):].strip() == '?'):
-            return self._format_message(
-                channel=data['channel'],
-                text=self._instruction_list(filters),
-            )
+        elif self.message_is_to_me(data):
+            text = data['text'][len(self.address_as):].strip()
+            if text == 'help':
+                return self._format_message(
+                    channel=data['channel'],
+                    text=self._instruction_list(filters),
+                )
+            elif text == 'version':
+                return self._format_message(
+                    channel=data['channel'],
+                    text=self.VERSION,
+                )
         for filter_, dispatch in filters.items():
             if filter_(self, data):
                 logger.debug('Response triggered')
@@ -213,8 +224,10 @@ class SlackBot:
         return '\n\n'.join([
             self.INSTRUCTIONS.strip(),
             '*Supported methods:*',
-            'If you send "@{}: ?" to me I reply with these '
+            'If you send "@{}: help" to me I reply with these '
             'instructions.'.format(self.user),
+            'If you send "@{}: version" to me I reply with my current '
+            'version.'.format(self.user),
         ] + [
             ' '.join((filter_.__doc__, dispatch.__doc__))
             for filter_, dispatch in filters.items()
