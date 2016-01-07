@@ -8,7 +8,7 @@ from textwrap import dedent
 
 from aiohttp import MsgType, ws_connect
 
-from . import __name__, __version__
+from . import __name__ as mod_name, __version__
 from .slack_api import SlackApiError, SlackBotApi
 from .utils import truncate
 
@@ -58,7 +58,7 @@ class SlackBot:
 
     RTM_START_ENDPOINT = 'rtm.start'
 
-    VERSION = ' '.join((__name__, __version__))
+    VERSION = ' '.join((mod_name, __version__))
 
     def __init__(self, id_, user, api):
         self.id_ = id_
