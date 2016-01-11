@@ -52,7 +52,7 @@ def raise_for_status(response):
                 headers=response.headers,
                 reason=response.reason,
             )
-            if issubclass(err, web_exceptions._HTTPMove):
+            if issubclass(err, web_exceptions._HTTPMove):  # pylint: disable=protected-access
                 raise err(response.headers['Location'], **payload)
             raise err(**payload)
 

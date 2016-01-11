@@ -30,7 +30,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = []
+        self.test_args = ['--pylint']
         self.test_suite = True
 
     def run_tests(self):
@@ -60,9 +60,11 @@ setup(
     packages=['aslack'],
     platforms='any',
     tests_require=[
-        'pytest',
         'asynctest',
+        'pylint>=1.5.3',
+        'pytest',
         'pytest-asyncio',
+        'pytest-pylint',
     ],
     url='http://github.com/textbook/aslack/',
     version=aslack.__version__,

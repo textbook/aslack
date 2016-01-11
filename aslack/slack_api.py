@@ -192,16 +192,16 @@ class SlackApi:
            contains an error message.
 
         """
-        url = self._create_url(method)
+        url = self.create_url(method)
         params = params.copy()
         params['token'] = self.token
-        logger.info('Executing method {!r}'.format(method))
-        logger.debug('...with params {!r}'.format(params))
+        logger.info('Executing method %r', method)
+        logger.debug('...with params %r', params)
         response = await aiohttp.get(url, params=params)
-        logger.info('Status: {}'.format(response.status))
+        logger.info('Status: %r', response.status)
         if response.status == 200:
             json = await response.json()
-            logger.debug('...with JSON {!r}'.format(json))
+            logger.debug('...with JSON %r', json)
             if json.get('ok'):
                 return json
             raise SlackApiError(json['error'])
@@ -209,7 +209,7 @@ class SlackApi:
             raise_for_status(response)
 
     @classmethod
-    def _create_url(cls, method):
+    def create_url(cls, method):
         """Create the full API URL for a given method.
 
         Arguments:
@@ -222,12 +222,12 @@ class SlackApi:
           SlackApiError: If the method is unknown.
 
         """
-        if not cls._method_exists(method):
+        if not cls.method_exists(method):
             raise SlackApiError('The {!r} method is unknown.'.format(method))
         return '/'.join((cls.API_BASE_URL, method))
 
     @classmethod
-    def _method_exists(cls, method):
+    def method_exists(cls, method):
         """Whether a given method exists in the known API.
 
         Arguments:
@@ -243,7 +243,7 @@ class SlackApi:
             if methods is None:
                 break
         if isinstance(methods, str):
-            logger.debug('{!r}: {!r}'.format(method, methods))
+            logger.debug('%r: %r', method, methods)
             return True
         return False
 
@@ -280,7 +280,7 @@ def api_subclass_factory(name, docstring, remove_methods, base=SlackApi):
     return type(name, (base,), dict(API_METHODS=methods, __doc__=docstring))
 
 
-SlackBotApi = api_subclass_factory(
+SlackBotApi = api_subclass_factory(  # pylint: disable=invalid-name
     'SlackBotApi',
     'API accessible to Slack custom bots.',
     remove_methods=dict(
@@ -298,7 +298,7 @@ SlackBotApi = api_subclass_factory(
 )
 
 
-SlackAppBotApi = api_subclass_factory(
+SlackAppBotApi = api_subclass_factory(  # pylint: disable=invalid-name
     'SlackAppBotApi',
     'API accessible to Slack app bots.',
     remove_methods=dict(

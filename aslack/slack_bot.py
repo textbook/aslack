@@ -137,7 +137,7 @@ class SlackBot:
         if filters is None:
             filters = self.MESSAGE_FILTERS
         url = await self.get_socket_url()
-        logger.debug('Connecting to {!r}'.format(url))
+        logger.debug('Connecting to %r', url)
         async with ws_connect(url) as socket:
             first_msg = await socket.receive()
             self._validate_first_message(first_msg)
@@ -145,9 +145,10 @@ class SlackBot:
                 if message.tp == MsgType.text:
                     result = await self.handle_message(message, filters)
                     if result is not None:
-                        logger.info('Sending message: {!r}'.format(
-                                truncate(result, max_len=50),
-                        ))
+                        logger.info(
+                            'Sending message: %r',
+                            truncate(result, max_len=50),
+                        )
                         socket.send_str(result)
                 elif message.tp in (MsgType.closed, MsgType.error):
                     if not socket.closed:

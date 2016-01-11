@@ -61,10 +61,10 @@ def test_init(get_api_token, args, need_token):
 def test_create_url(method, exists):
     if exists:
         expected = 'https://slack.com/api/{}'.format(method)
-        assert SlackApi._create_url(method) == expected
+        assert SlackApi.create_url(method) == expected
     else:
         with pytest.raises(SlackApiError):
-            SlackApi._create_url(method)
+            SlackApi.create_url(method)
 
 
 def test_api_subclass_factory():

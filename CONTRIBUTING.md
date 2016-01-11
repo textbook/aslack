@@ -1,9 +1,9 @@
 Thanks for your interest in aSlack! I really appreciate your taking the time to
 make it better. The basics for code contribution are as follows:
 
- - Adhere to the [Python style guide]. Pylint checking will be enabled once
-   [this issue] has been closed, but in the meantime you can look at the
-   existing code to see how things are laid out.
+ - Adhere to the [Python style guide]. [Pylint] checking is enabled to keep
+   everything neat, and you can look at the existing code to see how things have
+   been laid out
  - Any new functionality should be reasonably well covered with automated
    testing (I aim for 100% coverage, but this isn't a requirement for
    contribution - do cover the *"happy path"*, though).
@@ -28,6 +28,6 @@ that violates this code of conduct, report it to <mail@jonrshar.pe>.
 
   [contributor covenant]: http://contributor-covenant.org/version/1/3/0/
   [help wanted]: https://github.com/textbook/aslack/labels/help%20wanted
+  [pylint]: http://pylint.org/
   [python style guide]: https://www.python.org/dev/peps/pep-0008/
-  [this issue]: https://github.com/PyCQA/pylint/issues/654
   [write a good commit message]: https://github.com/erlang/otp/wiki/Writing-good-commit-messages
