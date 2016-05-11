@@ -9,7 +9,7 @@
 
 # Add files or directories to the blacklist. They should be base names, not
 # paths.
-ignore=CVS,docs,tests,setup.py
+ignore=CVS,docs,tests,setup.py,test_halliwell.py
 
 # Pickle collected data for later comparisons.
 persistent=yes

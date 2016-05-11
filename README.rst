@@ -64,7 +64,34 @@ development dependencies (ideally in a ``virtualenv``) using::
 
     pip install -r requirements.txt
 
+Testing
+-------
+
+The test suite can be run using ``py.test`` directly or by running::
+
+    python setup.py test
+
+in which case ``pylint`` will also be run to check the code quality.
+
+Additionally, a demo test for the Halliwell example can be run by setting the
+environment variable ``TMDB_API_TOKEN``.
+
+Examples
+--------
+
+See the ``/examples`` directory for examples of the kinds of bots that you can
+build with aSlack.
+
+Halliwell
+.........
+
+Based on both aSlack and `aTMDb`_, Halliwell is a bot that can provide
+information on movies or actors and find overlaps. Two environment variables,
+``SLACK_API_TOKEN`` and ``TMDB_API_TOKEN``, are required to run this example,
+and configuration for easy deployment to Cloud Foundry is provided.
+
 .. _aiohttp: http://aiohttp.rtfd.org/
 .. _asyncio: https://docs.python.org/3/library/asyncio.html
+.. _aTMDb: http://pythonhosted.org/atmdb/
 .. _PyPI: https://pypi.python.org/pypi
 .. _PythonHosted: http://pythonhosted.org/aslack/

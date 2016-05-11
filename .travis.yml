@@ -14,3 +14,13 @@ deploy:
     distributions: "sdist bdist_wheel"
     on:
       tags: true
+  - provider: cloudfoundry
+    edge: true
+    api: https://api.run.pez.pivotal.io
+    username: $CF_USERNAME
+    password: $CF_PASSWORD
+    organization: pivot-jsharpe
+    space: slack-apps
+    manifest: manifest-halliwell.yml
+    on:
+      tags: true

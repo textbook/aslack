@@ -1,0 +1,8 @@
+---
+applications:
+- name: halliwell
+  buildpack: https://github.com/cloudfoundry/python-buildpack#v1.5.4
+  command: python examples/halliwell.py
+  disk_quota: 512M
+  memory: 256M
+  no-route: true

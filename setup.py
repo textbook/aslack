@@ -30,7 +30,7 @@ class PyTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
-        self.test_args = ['--pylint']
+        self.test_args = ['--pylint', '--pylint-error-types=FEW']
         self.test_suite = True
 
     def run_tests(self):
@@ -53,6 +53,9 @@ setup(
     ],
     cmdclass={'test': PyTest},
     description=aslack.__doc__,
+    extras_require=dict(
+        examples=['atmdb>=0.1.3'],
+    ),
     install_requires=['aiohttp>=0.15.0'],
     license='License :: OSI Approved :: ISC License (ISCL)',
     long_description=long_description,
