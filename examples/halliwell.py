@@ -20,8 +20,8 @@ class Halliwell(SlackBot):
     Arguments:
       id_ (:py:class:`str`): The BOT's Slack ID.
       user (:py:class:`str`): The BOT's friendly name.
-      api (:py:class:`SlackApi`): The Slack API wrapper.
-      tmdb_client (:py:class:`TMDbClient`): The TMDb client.
+      api (:py:class:`~.SlackApi`): The Slack API wrapper.
+      tmdb_client (:py:class:`atmdb.client.TMDbClient`): The TMDb client.
 
     """
 

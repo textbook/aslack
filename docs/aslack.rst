@@ -24,3 +24,13 @@ aslack.utils module
 .. automodule:: aslack.utils
     :members:
     :show-inheritance:
+
+Examples
+********
+
+halliwell
+---------
+
+.. automodule:: examples.halliwell
+    :members:
+    :show-inheritance:
