@@ -200,7 +200,7 @@ class SlackBot:
         return cls(data['user_id'], data['user'], api)
 
     def _format_message(self, channel, text):
-        """Format an outoging message for transmission.
+        """Format an outgoing message for transmission.
 
         Note:
           Adds the message type (``'message'``) and incremental ID.
