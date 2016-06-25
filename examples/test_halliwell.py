@@ -1,5 +1,6 @@
 from json import dumps, loads
 from os import environ
+from unittest import mock
 
 from atmdb import TMDbClient
 import pytest
@@ -18,5 +19,11 @@ if 'TMDB_API_TOKEN' in environ:
             {'data': dumps(dict(channel='hello', type='message', text=query))},
         )
         bot = Halliwell('abc123', '', None, tmdb_client=TMDbClient.from_env())
-        result = await bot.handle_message(message, bot.MESSAGE_FILTERS)
-        assert 'Efren Ramirez' in loads(result).get('text')
+        mock_socket = mock.MagicMock()
+        await bot.handle_message(
+            message,
+            bot.MESSAGE_FILTERS,
+            mock_socket,
+        )
+        message = loads(mock_socket.send_str.call_args[0][0])
+        assert 'Efren Ramirez' in message.get('text')

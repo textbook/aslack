@@ -99,14 +99,20 @@ async def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
     mock_message = mock.Mock(data='{}')
     mock_filter_ = mock.Mock(return_value=True)
-    mock_dispatch = mock.CoroutineMock(return_value=dict(channel='foo', text='bar'))
-    response = await bot.handle_message(mock_message, {mock_filter_: mock_dispatch})
+    mock_dispatch = mock.CoroutineMock(
+        return_value=dict(channel='foo', text='bar'))
+    mock_socket = mock.MagicMock()
+    await bot.handle_message(
+        mock_message,
+        {mock_filter_: mock_dispatch},
+        mock_socket,
+    )
     expected = dict(
         id=randint.return_value,
         type='message',
         **mock_dispatch.return_value,
     )
-    assert json.loads(response) == expected
+    assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
     mock_filter_.assert_called_once_with(bot, {})
     mock_dispatch.assert_called_once_with(bot, {})
 
@@ -126,8 +132,9 @@ async def test_handle_help_message(randint):
         text=bot._instruction_list({}),
         type='message',
     )
-    response = await bot.handle_message(mock_msg, {})
-    assert json.loads(response) == expected
+    mock_socket = mock.MagicMock()
+    await bot.handle_message(mock_msg, {}, mock_socket)
+    assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
 @mock.patch('aslack.slack_bot.randint', return_value=10)
@@ -145,8 +152,9 @@ async def test_handle_version_message(randint):
         text=bot.VERSION,
         type='message',
     )
-    response = await bot.handle_message(mock_msg, {})
-    assert json.loads(response) == expected
+    mock_socket = mock.MagicMock()
+    await bot.handle_message(mock_msg, {}, mock_socket)
+    assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
 @pytest.mark.asyncio
@@ -154,14 +162,18 @@ async def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
     with pytest.raises(SlackApiError):
-        await bot.handle_message(mock_msg, {})
+        await bot.handle_message(mock_msg, {}, None)
 
 
 @pytest.mark.asyncio
 async def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
-    await bot.handle_message(mock_msg, {lambda self, msg: False: None})
+    await bot.handle_message(
+        mock_msg,
+        {lambda self, msg: False: None},
+        mock.MagicMock(),
+    )
 
 
 @pytest.mark.parametrize('input_,output', [

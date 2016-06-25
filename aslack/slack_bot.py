@@ -86,7 +86,7 @@ class SlackBot:
         )
         return data['url']
 
-    async def handle_message(self, message, filters):
+    async def handle_message(self, message, filters, socket):
         """Handle an incoming message appropriately.
 
         Arguments:
@@ -94,9 +94,8 @@ class SlackBot:
             message to handle.
           filters (:py:class:`dict`): The filters to apply to incoming
             messages.
-
-        Returns:
-          :py:class:`str`: The response to send as a result.
+          socket (:py:class:`aiohttp.web.WebSocketResponse`): The web
+            socket to respond on.
 
         """
         data = self._unpack_message(message)
@@ -108,20 +107,31 @@ class SlackBot:
         elif self.message_is_to_me(data):
             text = data['text'][len(self.address_as):].strip()
             if text == 'help':
-                return self._format_message(
+                return self._respond(
                     channel=data['channel'],
+                    socket=socket,
                     text=self._instruction_list(filters),
                 )
             elif text == 'version':
-                return self._format_message(
+                return self._respond(
                     channel=data['channel'],
+                    socket=socket,
                     text=self.VERSION,
                 )
         for filter_, dispatch in filters.items():
             if filter_(self, data):
                 logger.debug('Response triggered')
                 response = await dispatch(self, data)
-                return self._format_message(**response)
+                self._respond(socket, **response)
+
+    def _respond(self, socket, **response):
+        result = self._format_message(**response)
+        if result is not None:
+            logger.info(
+                'Sending message: %r',
+                truncate(result, max_len=50),
+            )
+        socket.send_str(result)
 
     async def join_rtm(self, filters=None):
         """Join the real-time messaging service.
@@ -143,13 +153,7 @@ class SlackBot:
             self._validate_first_message(first_msg)
             async for message in socket:
                 if message.tp == MsgType.text:
-                    result = await self.handle_message(message, filters)
-                    if result is not None:
-                        logger.info(
-                            'Sending message: %r',
-                            truncate(result, max_len=50),
-                        )
-                        socket.send_str(result)
+                    await self.handle_message(message, filters, socket)
                 elif message.tp in (MsgType.closed, MsgType.error):
                     if not socket.closed:
                         await socket.close()
