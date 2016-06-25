@@ -102,10 +102,10 @@ async def test_handle_message_dispatch(randint):
     mock_dispatch = mock.CoroutineMock(
         return_value=dict(channel='foo', text='bar'))
     mock_socket = mock.MagicMock()
+    bot.socket = mock_socket
     await bot.handle_message(
         mock_message,
         {mock_filter_: mock_dispatch},
-        mock_socket,
     )
     expected = dict(
         id=randint.return_value,
@@ -133,7 +133,8 @@ async def test_handle_help_message(randint):
         type='message',
     )
     mock_socket = mock.MagicMock()
-    await bot.handle_message(mock_msg, {}, mock_socket)
+    bot.socket = mock_socket
+    await bot.handle_message(mock_msg, {})
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
@@ -153,7 +154,8 @@ async def test_handle_version_message(randint):
         type='message',
     )
     mock_socket = mock.MagicMock()
-    await bot.handle_message(mock_msg, {}, mock_socket)
+    bot.socket = mock_socket
+    await bot.handle_message(mock_msg, {})
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
@@ -162,7 +164,7 @@ async def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
     with pytest.raises(SlackApiError):
-        await bot.handle_message(mock_msg, {}, None)
+        await bot.handle_message(mock_msg, {})
 
 
 @pytest.mark.asyncio
@@ -172,7 +174,6 @@ async def test_handle_unfiltered_message():
     await bot.handle_message(
         mock_msg,
         {lambda self, msg: False: None},
-        mock.MagicMock(),
     )
 
 

@@ -29,6 +29,9 @@ class SlackBot:
         ``'<@user>: '``).
       full_name (:py:class:`str`): The name of the bot as it
         appears in messages about the bot (e.g. ``'<@user>'``).
+      socket (:py:class:`aiohttp.web.WebSocketResponse`): The web
+        socket to respond on.
+
       API_AUTH_ENDPOINT (:py:class:`str`): Test endpoint for API
         authorisation.
       INSTRUCTIONS (:py:class:`str`): Message to give the user when
@@ -67,6 +70,7 @@ class SlackBot:
         self.full_name = '<@{}>'.format(id_)
         self.address_as = '{}: '.format(self.full_name)
         self._msg_ids = count(randint(1, 1000))
+        self.socket = None
 
     async def get_socket_url(self):
         """Get the WebSocket URL for the RTM session.
@@ -86,7 +90,7 @@ class SlackBot:
         )
         return data['url']
 
-    async def handle_message(self, message, filters, socket):
+    async def handle_message(self, message, filters):
         """Handle an incoming message appropriately.
 
         Arguments:
@@ -94,8 +98,6 @@ class SlackBot:
             message to handle.
           filters (:py:class:`dict`): The filters to apply to incoming
             messages.
-          socket (:py:class:`aiohttp.web.WebSocketResponse`): The web
-            socket to respond on.
 
         """
         data = self._unpack_message(message)
@@ -109,29 +111,34 @@ class SlackBot:
             if text == 'help':
                 return self._respond(
                     channel=data['channel'],
-                    socket=socket,
                     text=self._instruction_list(filters),
                 )
             elif text == 'version':
                 return self._respond(
                     channel=data['channel'],
-                    socket=socket,
                     text=self.VERSION,
                 )
         for filter_, dispatch in filters.items():
             if filter_(self, data):
                 logger.debug('Response triggered')
                 response = await dispatch(self, data)
-                self._respond(socket, **response)
+                self._respond(**response)
 
-    def _respond(self, socket, **response):
-        result = self._format_message(**response)
+    def _respond(self, channel, text):
+        """Respond to a message on the current socket.
+
+        Args:
+          channel (:py:class:`str`): The channel to send to.
+          text (:py:class:`str`): The message text to send.
+
+        """
+        result = self._format_message(channel, text)
         if result is not None:
             logger.info(
                 'Sending message: %r',
                 truncate(result, max_len=50),
             )
-        socket.send_str(result)
+        self.socket.send_str(result)
 
     async def join_rtm(self, filters=None):
         """Join the real-time messaging service.
@@ -151,12 +158,14 @@ class SlackBot:
         async with ws_connect(url) as socket:
             first_msg = await socket.receive()
             self._validate_first_message(first_msg)
+            self.socket = socket
             async for message in socket:
                 if message.tp == MsgType.text:
-                    await self.handle_message(message, filters, socket)
+                    await self.handle_message(message, filters)
                 elif message.tp in (MsgType.closed, MsgType.error):
                     if not socket.closed:
                         await socket.close()
+                    self.socket = None
                     break
         logger.info('Left real-time messaging.')
 

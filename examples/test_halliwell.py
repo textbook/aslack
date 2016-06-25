@@ -20,10 +20,10 @@ if 'TMDB_API_TOKEN' in environ:
         )
         bot = Halliwell('abc123', '', None, tmdb_client=TMDbClient.from_env())
         mock_socket = mock.MagicMock()
+        bot.socket = mock_socket
         await bot.handle_message(
             message,
             bot.MESSAGE_FILTERS,
-            mock_socket,
         )
         message = loads(mock_socket.send_str.call_args[0][0])
         assert 'Efren Ramirez' in message.get('text')
