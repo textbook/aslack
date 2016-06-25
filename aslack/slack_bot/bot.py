@@ -8,9 +8,9 @@ from textwrap import dedent
 
 from aiohttp import MsgType, ws_connect
 
-from . import __name__ as mod_name, __version__
-from .slack_api import SlackApiError, SlackBotApi
-from .utils import truncate
+from aslack import __name__ as mod_name, __version__
+from aslack.slack_api import SlackApiError, SlackBotApi
+from aslack.utils import truncate
 
 logger = logging.getLogger(__name__)
 

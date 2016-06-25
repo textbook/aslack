@@ -9,7 +9,7 @@ from aslack.slack_bot import SlackBot
 from helpers import AsyncContextManager, AsyncIterable
 
 
-@mock.patch('aslack.slack_bot.randint', return_value=10)
+@mock.patch('aslack.slack_bot.bot.randint', return_value=10)
 def test_init(randint):
     args = dict(id_='foo', user='bar', api='baz')
     bot = SlackBot(**args)
@@ -22,7 +22,7 @@ def test_init(randint):
 
 
 @mock.patch(
-    'aslack.slack_bot.SlackBotApi.execute_method',
+    'aslack.slack_bot.bot.SlackBotApi.execute_method',
     return_value={'user_id': 'foo', 'user': 'bar'},
 )
 @pytest.mark.asyncio
@@ -81,7 +81,7 @@ def test_validate_first_message(data, raises):
             SlackBot._validate_first_message(mock_message)
 
 
-@mock.patch('aslack.slack_bot.randint', return_value=10)
+@mock.patch('aslack.slack_bot.bot.randint', return_value=10)
 def test_format_message(randint):
     bot = SlackBot(None, None, None)
     expected = dict(
@@ -93,7 +93,7 @@ def test_format_message(randint):
     assert json.loads(bot._format_message('foo', 'bar')) == expected
 
 
-@mock.patch('aslack.slack_bot.randint', return_value=10)
+@mock.patch('aslack.slack_bot.bot.randint', return_value=10)
 @pytest.mark.asyncio
 async def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
@@ -117,7 +117,7 @@ async def test_handle_message_dispatch(randint):
     mock_dispatch.assert_called_once_with(bot, {})
 
 
-@mock.patch('aslack.slack_bot.randint', return_value=10)
+@mock.patch('aslack.slack_bot.bot.randint', return_value=10)
 @pytest.mark.asyncio
 async def test_handle_help_message(randint):
     bot = SlackBot('foo', None, None)
@@ -138,7 +138,7 @@ async def test_handle_help_message(randint):
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
-@mock.patch('aslack.slack_bot.randint', return_value=10)
+@mock.patch('aslack.slack_bot.bot.randint', return_value=10)
 @pytest.mark.asyncio
 async def test_handle_version_message(randint):
     bot = SlackBot('foo', None, None)
@@ -209,7 +209,7 @@ def test_instruction_list():
     assert '"@foo: help"' in instructions and '"@foo: version"' in instructions
 
 
-@mock.patch('aslack.slack_bot.ws_connect')
+@mock.patch('aslack.slack_bot.bot.ws_connect')
 @pytest.mark.asyncio
 async def test_join_rtm_simple(ws_connect):
     ws_connect.return_value = AsyncContextManager(
@@ -234,7 +234,7 @@ async def test_join_rtm_simple(ws_connect):
     (True, 0),
     (False, 1),
 ])
-@mock.patch('aslack.slack_bot.ws_connect')
+@mock.patch('aslack.slack_bot.bot.ws_connect')
 @pytest.mark.asyncio
 async def test_join_rtm_error_messages(ws_connect, closed, calls):
     mock_msg = mock.Mock(tp=aiohttp.MsgType.closed)
@@ -259,7 +259,7 @@ async def test_join_rtm_error_messages(ws_connect, closed, calls):
     assert mock_socket.close.call_count == calls
 
 
-@mock.patch('aslack.slack_bot.ws_connect')
+@mock.patch('aslack.slack_bot.bot.ws_connect')
 @pytest.mark.asyncio
 async def test_join_rtm_messages(ws_connect):
     mock_msg = mock.Mock(tp=aiohttp.MsgType.text, data='{"type": "hello"}')

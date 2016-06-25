@@ -14,7 +14,7 @@ aslack.slack_api module
 aslack.slack_bot module
 -----------------------
 
-.. automodule:: aslack.slack_bot
+.. automodule:: aslack.slack_bot.bot
     :members:
     :show-inheritance:
 
