@@ -41,7 +41,7 @@ async def test_get_socket_url():
         **{'execute_method.return_value': {'url': 'foo'}},
     )
     bot = SlackBot(None, None, api)
-    url = await bot.get_socket_url()
+    url = await bot._get_socket_url()
     assert url == 'foo'
     api.execute_method.assert_called_once_with(
         'rtm.start',

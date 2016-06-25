@@ -72,23 +72,34 @@ class SlackBot:
         self._msg_ids = count(randint(1, 1000))
         self.socket = None
 
-    async def get_socket_url(self):
-        """Get the WebSocket URL for the RTM session.
+    async def join_rtm(self, filters=None):
+        """Join the real-time messaging service.
 
-        Warning:
-          The URL expires if the session is not joined within 30
-          seconds of the API call to the start endpoint.
-
-        Returns:
-          :py:class:`str`: The socket URL.
+        Arguments:
+          filters (:py:class:`dict`, optional): Dictionary mapping
+            message filters to the functions they should dispatch to.
+            Use a :py:class:`collections.OrderedDict` if precedence is
+            important; only one filter, the first match, will be
+            applied to each message.
 
         """
-        data = await self.api.execute_method(
-            self.RTM_START_ENDPOINT,
-            simple_latest=True,
-            no_unreads=True,
-        )
-        return data['url']
+        if filters is None:
+            filters = self.MESSAGE_FILTERS
+        url = await self._get_socket_url()
+        logger.debug('Connecting to %r', url)
+        async with ws_connect(url) as socket:
+            first_msg = await socket.receive()
+            self._validate_first_message(first_msg)
+            self.socket = socket
+            async for message in socket:
+                if message.tp == MsgType.text:
+                    await self.handle_message(message, filters)
+                elif message.tp in (MsgType.closed, MsgType.error):
+                    if not socket.closed:
+                        await socket.close()
+                    self.socket = None
+                    break
+        logger.info('Left real-time messaging.')
 
     async def handle_message(self, message, filters):
         """Handle an incoming message appropriately.
@@ -123,51 +134,6 @@ class SlackBot:
                 logger.debug('Response triggered')
                 response = await dispatch(self, data)
                 self._respond(**response)
-
-    def _respond(self, channel, text):
-        """Respond to a message on the current socket.
-
-        Args:
-          channel (:py:class:`str`): The channel to send to.
-          text (:py:class:`str`): The message text to send.
-
-        """
-        result = self._format_message(channel, text)
-        if result is not None:
-            logger.info(
-                'Sending message: %r',
-                truncate(result, max_len=50),
-            )
-        self.socket.send_str(result)
-
-    async def join_rtm(self, filters=None):
-        """Join the real-time messaging service.
-
-        Arguments:
-          filters (:py:class:`dict`, optional): Dictionary mapping
-            message filters to the functions they should dispatch to.
-            Use a :py:class:`collections.OrderedDict` if precedence is
-            important; only one filter, the first match, will be
-            applied to each message.
-
-        """
-        if filters is None:
-            filters = self.MESSAGE_FILTERS
-        url = await self.get_socket_url()
-        logger.debug('Connecting to %r', url)
-        async with ws_connect(url) as socket:
-            first_msg = await socket.receive()
-            self._validate_first_message(first_msg)
-            self.socket = socket
-            async for message in socket:
-                if message.tp == MsgType.text:
-                    await self.handle_message(message, filters)
-                elif message.tp in (MsgType.closed, MsgType.error):
-                    if not socket.closed:
-                        await socket.close()
-                    self.socket = None
-                    break
-        logger.info('Left real-time messaging.')
 
     def message_mentions_me(self, data):
         """If you send a message that mentions me"""
@@ -217,6 +183,24 @@ class SlackBot:
         payload.update(channel=channel, text=text)
         return json.dumps(payload)
 
+    async def _get_socket_url(self):
+        """Get the WebSocket URL for the RTM session.
+
+        Warning:
+          The URL expires if the session is not joined within 30
+          seconds of the API call to the start endpoint.
+
+        Returns:
+          :py:class:`str`: The socket URL.
+
+        """
+        data = await self.api.execute_method(
+            self.RTM_START_ENDPOINT,
+            simple_latest=True,
+            no_unreads=True,
+        )
+        return data['url']
+
     def _instruction_list(self, filters):
         """Generates the instructions for a bot and its filters.
 
@@ -247,6 +231,41 @@ class SlackBot:
             for filter_, dispatch in filters.items()
         ])
 
+    def _respond(self, channel, text):
+        """Respond to a message on the current socket.
+
+        Args:
+          channel (:py:class:`str`): The channel to send to.
+          text (:py:class:`str`): The message text to send.
+
+        """
+        result = self._format_message(channel, text)
+        if result is not None:
+            logger.info(
+                'Sending message: %r',
+                truncate(result, max_len=50),
+            )
+        self.socket.send_str(result)
+
+    @staticmethod
+    def _unpack_message(msg):
+        """Unpack the data from the message.
+
+        Arguments:
+          msg (:py:class:`aiohttp.websocket.Message`): The message to
+            unpack.
+
+        Returns:
+          :py:class:`dict`: The loaded data.
+
+        Raises:
+          :py:class:`AttributeError`: If there is no data attribute.
+          :py:class:`json.JSONDecodeError`: If the data isn't valid
+            JSON.
+
+        """
+        return json.loads(msg.data)
+
     @classmethod
     def _validate_first_message(cls, msg):
         """Check the first message matches the expected handshake.
@@ -267,22 +286,3 @@ class SlackBot:
         if data != cls.RTM_HANDSHAKE:
             raise SlackApiError('Unexpected response: {!r}'.format(data))
         logger.info('Joined real-time messaging.')
-
-    @staticmethod
-    def _unpack_message(msg):
-        """Unpack the data from the message.
-
-        Arguments:
-          msg (:py:class:`aiohttp.websocket.Message`): The message to
-            unpack.
-
-        Returns:
-          :py:class:`dict`: The loaded data.
-
-        Raises:
-          :py:class:`AttributeError`: If there is no data attribute.
-          :py:class:`json.JSONDecodeError`: If the data isn't valid
-            JSON.
-
-        """
-        return json.loads(msg.data)
