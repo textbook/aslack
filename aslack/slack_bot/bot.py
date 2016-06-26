@@ -133,7 +133,7 @@ class SlackBot:
             if filter_(self, data):
                 logger.debug('Response triggered')
                 response = await dispatch(self, data)
-                self._respond(**response)
+                self._respond(channel=data['channel'], text=response)
 
     def message_mentions_me(self, data):
         """If you send a message that mentions me"""

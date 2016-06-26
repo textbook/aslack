@@ -97,10 +97,9 @@ def test_format_message(randint):
 @pytest.mark.asyncio
 async def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
-    mock_message = mock.Mock(data='{}')
+    mock_message = mock.Mock(data='{"channel": 123}')
     mock_filter_ = mock.Mock(return_value=True)
-    mock_dispatch = mock.CoroutineMock(
-        return_value=dict(channel='foo', text='bar'))
+    mock_dispatch = mock.CoroutineMock(return_value='bar')
     mock_socket = mock.MagicMock()
     bot.socket = mock_socket
     await bot.handle_message(
@@ -108,13 +107,14 @@ async def test_handle_message_dispatch(randint):
         {mock_filter_: mock_dispatch},
     )
     expected = dict(
+        channel=123,
         id=randint.return_value,
+        text=mock_dispatch.return_value,
         type='message',
-        **mock_dispatch.return_value,
     )
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
-    mock_filter_.assert_called_once_with(bot, {})
-    mock_dispatch.assert_called_once_with(bot, {})
+    mock_filter_.assert_called_once_with(bot, {'channel': 123})
+    mock_dispatch.assert_called_once_with(bot, {'channel': 123})
 
 
 @mock.patch('aslack.slack_bot.bot.randint', return_value=10)
@@ -262,7 +262,10 @@ async def test_join_rtm_error_messages(ws_connect, closed, calls):
 @mock.patch('aslack.slack_bot.bot.ws_connect')
 @pytest.mark.asyncio
 async def test_join_rtm_messages(ws_connect):
-    mock_msg = mock.Mock(tp=aiohttp.MsgType.text, data='{"type": "hello"}')
+    mock_msg = mock.Mock(
+        data='{"type": "hello", "channel": 123}',
+        tp=aiohttp.MsgType.text,
+    )
     mock_socket = AsyncIterable.from_test_data(
         mock_msg,
         close=None,

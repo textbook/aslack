@@ -69,13 +69,13 @@ class Halliwell(SlackBot):
         """I will tell you about that movie."""
         title = data['text'].split(' ', maxsplit=2)[-1]
         movie = await self.tmdb_client.find_movie(title)
-        return dict(channel=data['channel'], text=str(movie))
+        return str(movie)
 
     async def provide_person_data(self, data):
         """I will tell you about that person."""
         name = data['text'].split(' ', maxsplit=2)[-1]
         person = await self.tmdb_client.find_person(name)
-        return dict(channel=data['channel'], text=str(person))
+        return str(person)
 
     async def find_overlapping_actors(self, data):
         """I will find actors appearing in all of those movies."""
@@ -83,15 +83,12 @@ class Halliwell(SlackBot):
         try:
             people = await find_overlapping_actors(titles, self.tmdb_client)
         except ValueError as err:
-            text = err.args[0]
-        else:
-            if not people:
-                text = 'No actors found.'
-            else:
-                text = '\n\n'.join(['Results found:'] + [
-                    ' - {0.name} [{0.url}]'.format(person) for person in people
-                    ])
-        return dict(channel=data['channel'], text=text)
+            return err.args[0]
+        if not people:
+            return 'No actors found.'
+        return '\n\n'.join(['Results found:'] + [
+            ' - {0.name} [{0.url}]'.format(person) for person in people
+        ])
 
     async def find_overlapping_movies(self, data):
         """I will find movies featuring all of those actors."""
@@ -99,15 +96,12 @@ class Halliwell(SlackBot):
         try:
             movies = await find_overlapping_movies(names, self.tmdb_client)
         except ValueError as err:
-            text = err.args[0]
-        else:
-            if not movies:
-                text = 'No movies found.'
-            else:
-                text = '\n\n'.join(['Results found:'] + [
-                    ' - {0.title} [{0.url}]'.format(movie) for movie in movies
-                ])
-        return dict(channel=data['channel'], text=text)
+            return err.args[0]
+        if not movies:
+            return 'No movies found.'
+        return '\n\n'.join(['Results found:'] + [
+            ' - {0.title} [{0.url}]'.format(movie) for movie in movies
+        ])
 
     MESSAGE_FILTERS = OrderedDict([
         (message_is_actor_multiple_query, find_overlapping_actors),
