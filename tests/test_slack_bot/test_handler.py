@@ -34,4 +34,4 @@ def test_bot_handler_matching():
 def test_handler_description():
     description = MessageHandler().description()
     assert description.startswith('Arguments')
-    assert description.endswith('each message.')
+    assert description.endswith('positional arguments.')
