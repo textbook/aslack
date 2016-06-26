@@ -8,10 +8,6 @@ class MessageHandler:
     Arguments:
       *_ (:py:class:`tuple`): Arbitrary positional arguments.
 
-    Attributes:
-      steps (:py:class:`list`): The local copy of the steps.
-      STEPS (:py:class:`list`): The steps to take for each message.
-
     """
 
     def __init__(self, *_):
