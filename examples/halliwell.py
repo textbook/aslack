@@ -82,8 +82,10 @@ class MovieQueryHandler(BotMessageHandler):
             raise StopAsyncIteration
         title = self.text.split(' ', maxsplit=2)[-1]
         self.text = None
-        movie = await self.bot.tmdb_client.find_movie(title)
-        return str(movie)
+        movies = await self.bot.tmdb_client.find_movie(title)
+        if movies:
+            return str(movies[0])
+        return 'No movies found matching {!r}'.format(title)
 
 
 class PersonQueryHandler(BotMessageHandler):
@@ -101,8 +103,10 @@ class PersonQueryHandler(BotMessageHandler):
             raise StopAsyncIteration
         name = self.text.split(' ', maxsplit=2)[-1]
         self.text = None
-        person = await self.bot.tmdb_client.find_person(name)
-        return str(person)
+        people = await self.bot.tmdb_client.find_person(name)
+        if people:
+            return str(people[0])
+        return 'No people found matching {!r}'.format(name)
 
 
 class Halliwell(SlackBot):
@@ -131,7 +135,7 @@ class Halliwell(SlackBot):
         PersonQueryHandler,
     ]
 
-    VERSION = 'Halliwell v0.2.0 (aSlack v{})'.format(aslack_version)
+    VERSION = 'Halliwell v0.3.0 (aSlack v{})'.format(aslack_version)
 
     def __init__(self, id_, user, api, tmdb_client=None):
         super().__init__(id_, user, api)

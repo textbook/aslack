@@ -16,8 +16,10 @@ def test_description():
 
 if 'TMDB_API_TOKEN' in environ:
 
+    bot = Halliwell('abc123', '', None, tmdb_client=TMDbClient.from_env())
+
     @pytest.mark.asyncio
-    async def test_halliwell_demo():
+    async def test_halliwell_overlap():
         query = '<@abc123>: actors in "Crank" and "Napoleon Dynamite"'
         message = type(
             'Message',
@@ -25,7 +27,6 @@ if 'TMDB_API_TOKEN' in environ:
             {'data': dumps(dict(channel='hello', type='message', text=query))},
         )
         mock_socket = mock.MagicMock()
-        bot = Halliwell('abc123', '', None, tmdb_client=TMDbClient.from_env())
         bot.socket = mock_socket
         await bot.handle_message(
             message,
@@ -33,3 +34,21 @@ if 'TMDB_API_TOKEN' in environ:
         )
         message = loads(mock_socket.send_str.call_args[0][0])
         assert 'Efren Ramirez' in message.get('text')
+
+
+    @pytest.mark.asyncio
+    async def test_halliwell_person():
+        query = '<@abc123>: person William Fichtner'
+        message = type(
+            'Message',
+            (object,),
+            {'data': dumps(dict(channel='hello', type='message', text=query))},
+        )
+        mock_socket = mock.MagicMock()
+        bot.socket = mock_socket
+        await bot.handle_message(
+            message,
+            [cls(bot) for cls in bot.MESSAGE_FILTERS],
+        )
+        message = loads(mock_socket.send_str.call_args[0][0])
+        assert message.get('text') == 'William Fichtner [https://www.themoviedb.org/person/886]'
