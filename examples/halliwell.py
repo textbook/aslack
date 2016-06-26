@@ -7,6 +7,7 @@ import asyncio
 from atmdb import TMDbClient
 from atmdb.utils import find_overlapping_actors, find_overlapping_movies
 
+from aslack import __version__ as aslack_version
 from aslack.slack_bot import SlackBot, BotMessageHandler
 
 
@@ -130,7 +131,7 @@ class Halliwell(SlackBot):
         PersonQueryHandler,
     ]
 
-    VERSION = 'Halliwell v0.1.0'
+    VERSION = 'Halliwell v0.2.0 (aSlack v{})'.format(aslack_version)
 
     def __init__(self, id_, user, api, tmdb_client=None):
         super().__init__(id_, user, api)
