@@ -36,7 +36,7 @@ class SlackBot:
         authorisation.
       INSTRUCTIONS (:py:class:`str`): Message to give the user when
         they request instructions.
-      MESSAGE_FILTERS (:py:class:`dict`): Default filters for
+      MESSAGE_FILTERS (:py:class:`list`): Default filters for
         incoming messages
       RTM_HANDSHAKE (:py:class:`dict`): Expected handshake message
         from RTM API.
@@ -55,7 +55,7 @@ class SlackBot:
     Override these as appropriate for your specific needs.
     """)
 
-    MESSAGE_FILTERS = {}
+    MESSAGE_FILTERS = []
 
     RTM_HANDSHAKE = {'type': 'hello'}
 
@@ -84,7 +84,7 @@ class SlackBot:
 
         """
         if filters is None:
-            filters = self.MESSAGE_FILTERS
+            filters = [cls(self) for cls in self.MESSAGE_FILTERS]
         url = await self._get_socket_url()
         logger.debug('Connecting to %r', url)
         async with ws_connect(url) as socket:
@@ -107,7 +107,7 @@ class SlackBot:
         Arguments:
           message (:py:class:`aiohttp.websocket.Message`): The incoming
             message to handle.
-          filters (:py:class:`dict`): The filters to apply to incoming
+          filters (:py:class:`list`): The filters to apply to incoming
             messages.
 
         """
@@ -129,11 +129,11 @@ class SlackBot:
                     channel=data['channel'],
                     text=self.VERSION,
                 )
-        for filter_, dispatch in filters.items():
-            if filter_(self, data):
+        for _filter in filters:
+            if _filter.matches(data):
                 logger.debug('Response triggered')
-                response = await dispatch(self, data)
-                self._respond(channel=data['channel'], text=response)
+                async for response in _filter:
+                    self._respond(channel=data['channel'], text=response)
 
     def message_mentions_me(self, data):
         """If you send a message that mentions me"""
@@ -212,7 +212,7 @@ class SlackBot:
           added.
 
         Arguments:
-          filters (:py:class:`dict`): The filters to apply to incoming
+          filters (:py:class:`list`): The filters to apply to incoming
             messages.
 
         Returns:
@@ -226,10 +226,7 @@ class SlackBot:
             'instructions.'.format(self.user),
             'If you send "@{}: version" to me I reply with my current '
             'version.'.format(self.user),
-        ] + [
-            ' '.join((filter_.__doc__, dispatch.__doc__))
-            for filter_, dispatch in filters.items()
-        ])
+        ] + [filter.description() for filter in filters])
 
     def _respond(self, channel, text):
         """Respond to a message on the current socket.

@@ -18,8 +18,8 @@ pbr==1.8.1
 py==1.4.31
 Pygments==2.0.2
 pylint==1.5.3
-pytest==2.8.5
-pytest-asyncio==0.3.0
+pytest==2.9.2
+pytest-asyncio==0.4.1
 pytest-pylint==0.4.1
 python-dateutil==2.5.3
 pytz==2015.7

@@ -18,6 +18,10 @@ aslack.slack_bot module
     :members:
     :show-inheritance:
 
+.. automodule:: aslack.slack_bot.handler
+    :members:
+    :show-inheritance:
+
 aslack.utils module
 -------------------
 

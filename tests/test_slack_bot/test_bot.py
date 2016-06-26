@@ -5,8 +5,29 @@ from asynctest import mock
 import pytest
 
 from aslack.slack_api import SlackApiError, SlackBotApi
-from aslack.slack_bot import SlackBot
+from aslack.slack_bot import SlackBot, MessageHandler
 from helpers import AsyncContextManager, AsyncIterable
+
+
+class Unhandled(MessageHandler):
+
+    def description(self):
+        return 'a dummy handler'
+
+    def matches(self, data):
+        return False
+
+
+class Handled(MessageHandler):
+
+    def __init__(self, data):
+        self.data = [data]
+        super().__init__()
+
+    async def __anext__(self):
+        if self.data:
+            return self.data.pop()
+        raise StopAsyncIteration
 
 
 @mock.patch('aslack.slack_bot.bot.randint', return_value=10)
@@ -98,23 +119,17 @@ def test_format_message(randint):
 async def test_handle_message_dispatch(randint):
     bot = SlackBot(None, None, None)
     mock_message = mock.Mock(data='{"channel": 123}')
-    mock_filter_ = mock.Mock(return_value=True)
-    mock_dispatch = mock.CoroutineMock(return_value='bar')
     mock_socket = mock.MagicMock()
     bot.socket = mock_socket
-    await bot.handle_message(
-        mock_message,
-        {mock_filter_: mock_dispatch},
-    )
+    dummy_response = 'bar'
+    await bot.handle_message(mock_message, [Handled(dummy_response)])
     expected = dict(
         channel=123,
         id=randint.return_value,
-        text=mock_dispatch.return_value,
+        text=dummy_response,
         type='message',
     )
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
-    mock_filter_.assert_called_once_with(bot, {'channel': 123})
-    mock_dispatch.assert_called_once_with(bot, {'channel': 123})
 
 
 @mock.patch('aslack.slack_bot.bot.randint', return_value=10)
@@ -129,12 +144,12 @@ async def test_handle_help_message(randint):
     expected = dict(
         channel='bar',
         id=randint.return_value,
-        text=bot._instruction_list({}),
+        text=bot._instruction_list([]),
         type='message',
     )
     mock_socket = mock.MagicMock()
     bot.socket = mock_socket
-    await bot.handle_message(mock_msg, {})
+    await bot.handle_message(mock_msg, [])
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
@@ -155,7 +170,7 @@ async def test_handle_version_message(randint):
     )
     mock_socket = mock.MagicMock()
     bot.socket = mock_socket
-    await bot.handle_message(mock_msg, {})
+    await bot.handle_message(mock_msg, [])
     assert json.loads(mock_socket.send_str.call_args[0][0]) == expected
 
 
@@ -164,17 +179,14 @@ async def test_handle_error_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(error={}, type='error')))
     with pytest.raises(SlackApiError):
-        await bot.handle_message(mock_msg, {})
+        await bot.handle_message(mock_msg, [])
 
 
 @pytest.mark.asyncio
 async def test_handle_unfiltered_message():
     bot = SlackBot(None, None, None)
     mock_msg = mock.Mock(data=json.dumps(dict(type='message')))
-    await bot.handle_message(
-        mock_msg,
-        {lambda self, msg: False: None},
-    )
+    await bot.handle_message(mock_msg, [Unhandled()])
 
 
 @pytest.mark.parametrize('input_,output', [
@@ -199,14 +211,11 @@ def test_mentions_me(input_, output):
 
 def test_instruction_list():
     bot = SlackBot(None, 'foo', None)
-    def filter_():
-        """foo"""
-    def dispatch():
-        """bar"""
-    instructions = bot._instruction_list({filter_: dispatch})
-    assert instructions.endswith('foo bar')
+    instructions = bot._instruction_list([Unhandled()])
     assert instructions.startswith(SlackBot.INSTRUCTIONS.strip())
-    assert '"@foo: help"' in instructions and '"@foo: version"' in instructions
+    assert '"@foo: help"' in instructions
+    assert '"@foo: version"' in instructions
+    assert instructions.endswith('a dummy handler')
 
 
 @mock.patch('aslack.slack_bot.bot.ws_connect')
@@ -279,9 +288,7 @@ async def test_join_rtm_messages(ws_connect):
     )
     bot = SlackBot(None, None, api)
     data = {'channel': 'foo', 'text': 'bar'}
-    await bot.join_rtm({
-        lambda self, msg: True: mock.CoroutineMock(return_value=data),
-    })
+    await bot.join_rtm([Handled(data)])
     api.execute_method.assert_called_once_with(
         'rtm.start',
         simple_latest=True,
