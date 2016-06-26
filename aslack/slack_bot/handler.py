@@ -1,5 +1,4 @@
 """Generic message handling functionality."""
-from textwrap import dedent
 
 
 class MessageHandler:
@@ -12,6 +11,7 @@ class MessageHandler:
 
     def __init__(self, *_):
         self.text = None
+        self._description = None
 
     async def __aiter__(self):
         return self
@@ -26,7 +26,18 @@ class MessageHandler:
           :py:class:`str`: The handler's description.
 
         """
-        return dedent('\n'.join(self.__doc__.splitlines()[1:])).strip()
+        if self._description is None:
+            text = '\n'.join(self.__doc__.splitlines()[1:]).strip()
+            lines = []
+            for line in map(str.strip, text.splitlines()):
+                if line and lines:
+                    lines[-1] = ' '.join((lines[-1], line))
+                elif line:
+                    lines.append(line)
+                else:
+                    lines.append('')
+            self._description = '\n'.join(lines)
+        return self._description
 
     def matches(self, data):
         """Whether the handler should handle the current message.
