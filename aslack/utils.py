@@ -1,16 +1,6 @@
-"""Utility functionality.
-
-Attributes:
-  API_TOKEN_ENV (:py:class:`str`): The environment variable to store
-    the user's API token in.
-
-"""
-
-import os
+"""Utility functionality."""
 
 from aiohttp import web_exceptions
-
-API_TOKEN_ENV = 'SLACK_API_TOKEN'
 
 
 class FriendlyError(Exception):
@@ -55,27 +45,6 @@ def raise_for_status(response):
             if issubclass(err, web_exceptions._HTTPMove):  # pylint: disable=protected-access
                 raise err(response.headers['Location'], **payload)
             raise err(**payload)
-
-
-def get_api_token():
-    """Allow the user to enter their API token.
-
-    Note:
-      The token is added to the environment using the variable defined
-      in :py:const:`API_TOKEN_ENV`.
-
-    Returns:
-      :py:class:`str`: The user's API token.
-
-    """
-    token = os.getenv(API_TOKEN_ENV)
-    if token:
-        return token
-    template = ('Enter your API token (this will be stored '
-                'as {} for future use): ').format(API_TOKEN_ENV)
-    token = input(template)
-    os.environ[API_TOKEN_ENV] = token
-    return token
 
 
 def truncate(text, max_len=350, end='...'):

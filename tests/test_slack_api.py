@@ -28,7 +28,7 @@ async def test_execute_method(aiohttp, status, result, error):
         **{'json.return_value': json_future}
     ))
     aiohttp.get.return_value = resp_future
-    api = SlackApi(DUMMY_TOKEN)
+    api = SlackApi(api_token=DUMMY_TOKEN)
     method = 'auth.test'
     if error is None:
         assert await api.execute_method(method) == result
@@ -36,35 +36,23 @@ async def test_execute_method(aiohttp, status, result, error):
         with pytest.raises(error):
             await api.execute_method(method)
     aiohttp.get.assert_called_once_with(
-        'https://slack.com/api/{}'.format(method),
-        params={'token': DUMMY_TOKEN},
+        'https://slack.com/api/{}?token={}'.format(method, DUMMY_TOKEN)
     )
 
 
-@pytest.mark.parametrize('args,need_token', [
-    [(), True],
-    [(DUMMY_TOKEN,), False],
+@pytest.mark.parametrize('kwargs,need_token', [
+    [{}, True],
+    [{'api_token': DUMMY_TOKEN}, False],
 ])
-@mock.patch('aslack.slack_api.get_api_token')
-def test_init(get_api_token, args, need_token):
-    get_api_token.return_value = DUMMY_TOKEN
-    api = SlackApi(*args)
-    assert api.token == DUMMY_TOKEN
+@mock.patch('aslack.core.getenv')
+def test_init(getenv, kwargs, need_token):
+    getenv.return_value = DUMMY_TOKEN
     if need_token:
-        get_api_token.assert_called_once_with()
-
-
-@pytest.mark.parametrize('method,exists', [
-    ('auth.test', True),
-    ('foo.bar', False)
-])
-def test_create_url(method, exists):
-    if exists:
-        expected = 'https://slack.com/api/{}'.format(method)
-        assert SlackApi.create_url(method) == expected
+        api = SlackApi.from_env()
+        getenv.assert_called_once_with(SlackApi.TOKEN_ENV_VAR)
     else:
-        with pytest.raises(SlackApiError):
-            SlackApi.create_url(method)
+        api = SlackApi(**kwargs)
+    assert api.api_token == DUMMY_TOKEN
 
 
 def test_api_subclass_factory():

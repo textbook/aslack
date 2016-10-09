@@ -11,7 +11,8 @@ import logging
 
 import aiohttp
 
-from .utils import get_api_token, FriendlyError, raise_for_status
+from .core import Service, UrlParamMixin
+from .utils import FriendlyError, raise_for_status
 
 logger = logging.getLogger(__name__)
 
@@ -32,19 +33,13 @@ class SlackApiError(FriendlyError):
     """Friendly messages for expected Slack API errors."""
 
 
-class SlackApi:
+class SlackApi(UrlParamMixin, Service):
     """Class to handle interaction with Slack's API.
 
-    Arguments:
-      token (:py:class:`str`): The user's API token.
-
     Attributes:
-      API_BASE_URL (:py:class:`str`): The base URL for Slack API calls.
       API_METHODS (:py:class:`dict`): The API methods defined by Slack.
 
     """
-
-    API_BASE_URL = 'https://slack.com/api'
 
     API_METHODS = {
         'api': {'test': 'Checks API calling code.'},
@@ -166,16 +161,16 @@ class SlackApi:
         },
     }
 
-    def __init__(self, token=None):
-        if token is None:
-            token = get_api_token()
-        self.token = token
+    AUTH_PARAM = 'token'
+
+    REQUIRED = {'api_token'}
+
+    ROOT = 'https://slack.com/api/'
+
+    TOKEN_ENV_VAR = 'SLACK_API_TOKEN'
 
     async def execute_method(self, method, **params):
         """Execute a specified Slack Web API method.
-
-        Note:
-          The API token is added automatically by this method.
 
         Arguments:
           method (:py:class:`str`): The name of the method.
@@ -192,12 +187,9 @@ class SlackApi:
            contains an error message.
 
         """
-        url = self.create_url(method)
-        params = params.copy()
-        params['token'] = self.token
+        url = self.url_builder(method, url_params=params)
         logger.info('Executing method %r', method)
-        logger.debug('...with params %r', params)
-        response = await aiohttp.get(url, params=params)
+        response = await aiohttp.get(url)
         logger.info('Status: %r', response.status)
         if response.status == 200:
             json = await response.json()
@@ -207,24 +199,6 @@ class SlackApi:
             raise SlackApiError(json['error'])
         else:
             raise_for_status(response)
-
-    @classmethod
-    def create_url(cls, method):
-        """Create the full API URL for a given method.
-
-        Arguments:
-          method (:py:class:`str`): The name of the method.
-
-        Returns:
-          :py:class:`str`: The full API URL.
-
-        Raises:
-          SlackApiError: If the method is unknown.
-
-        """
-        if not cls.method_exists(method):
-            raise SlackApiError('The {!r} method is unknown.'.format(method))
-        return '/'.join((cls.API_BASE_URL, method))
 
     @classmethod
     def method_exists(cls, method):
