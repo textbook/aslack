@@ -60,7 +60,7 @@ setup(
     license='License :: OSI Approved :: ISC License (ISCL)',
     long_description=long_description,
     name='aslack',
-    packages=['aslack'],
+    packages=['aslack', 'aslack.slack_bot'],
     platforms='any',
     tests_require=[
         'asynctest',
