@@ -56,7 +56,7 @@ setup(
     extras_require=dict(
         examples=['atmdb>=0.1.3'],
     ),
-    install_requires=['aiohttp>=0.15.0,<0.21'],
+    install_requires=['aiohttp>=0.15.0,<3.8'],
     license='License :: OSI Approved :: ISC License (ISCL)',
     long_description=long_description,
     name='aslack',
